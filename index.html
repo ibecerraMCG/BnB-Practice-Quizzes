@@ -422,7 +422,10 @@
         min-width: 260px; animation: fade-down 0.2s ease;
     }
     #settings-panel.open { display: block; }
-    .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 0; }
+    .settings-row + .settings-row { border-top: 1px solid var(--border-subtle); }
+    .settings-row:first-child { padding-top: 2px; }
+    .settings-row:last-child { padding-bottom: 2px; }
     .settings-title { font-size: 0.84rem; font-weight: 600; color: var(--text-main); }
     .settings-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
@@ -535,14 +538,12 @@
         overflow: visible;
     }
     .hero-title {
-        font-size: clamp(2rem, 5vw, 3rem); font-weight: 800;
-        letter-spacing: -0.03em; line-height: 1.05;
-        color: var(--text-main);
-    }
-    .hero-title span {
+        font-size: clamp(1.8rem, 4.5vw, 2.8rem); font-weight: 800;
+        letter-spacing: -0.03em; line-height: 1.1;
         background: linear-gradient(120deg, var(--text-accent), var(--text-accent-2));
         -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         background-clip: text;
+        width: fit-content;
     }
 
     /* ============================================================
@@ -670,6 +671,21 @@
     .part-card.completed .complete-check { border-color: #fff; }
     .part-card.completed:hover { opacity: 0.9; }
 
+    /* Score chip */
+    .score-chip {
+        display: none; align-items: center; justify-content: center; gap: 5px;
+        font-size: 0.72rem; font-weight: 700;
+        padding: 5px 12px; border-radius: 20px;
+        background: var(--bg-active); color: var(--text-accent);
+        white-space: nowrap; text-align: center;
+    }
+    .score-chip.show { display: inline-flex; }
+    .score-chip.empty { background: none; border: 1px dashed var(--border-color); color: var(--text-muted); font-weight: 600; }
+    .score-chip .score-pct { opacity: 0.8; font-weight: 600; }
+
+    /* Hidden via settings toggle */
+    .complete-btn.hidden, .score-chip.hidden { display: none !important; }
+
     /* ============================================================
        NO RESULTS
     ============================================================ */
@@ -764,7 +780,7 @@
     <div class="header-controls">
         <div class="live-tracker hide-mobile" title="Visitors today (Eastern Time)">
             <span class="live-dot"></span>
-            <span id="visitor-count-display">Visitors: …</span>
+            <span id="visitor-count-display">Visitors Today: …</span>
         </div>
 
         <div class="updated-chip">
@@ -804,6 +820,24 @@
                 <span class="toggle-knob"></span>
             </button>
         </div>
+        <div class="settings-row">
+            <div class="settings-text">
+                <div class="settings-title">Completion tracker</div>
+                <div class="settings-sub">Mark quizzes as done</div>
+            </div>
+            <button id="complete-toggle" class="toggle-switch on" role="switch" aria-checked="true" onclick="toggleCompletionTracker()">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
+        <div class="settings-row">
+            <div class="settings-text">
+                <div class="settings-title">Score tracker</div>
+                <div class="settings-sub">Show your latest quiz scores</div>
+            </div>
+            <button id="score-toggle" class="toggle-switch" role="switch" aria-checked="false" onclick="toggleScoreTracker()">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
     </div>
 </header>
 
@@ -826,7 +860,7 @@
     <main id="main-content">
 
         <div class="page-hero">
-            <h1 class="hero-title">Brain &amp; <span>Behavior</span></h1>
+            <h1 class="hero-title">Brain &amp; Behavior Practice Quizzes</h1>
         </div>
 
         <div id="no-results">
@@ -858,6 +892,7 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
+                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -875,6 +910,7 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
+                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -892,6 +928,7 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
+                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -910,6 +947,7 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
+                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1005,6 +1043,8 @@ const customBuild = document.getElementById('custom-builder');
 const settingsBtn = document.getElementById('settings-btn');
 const settingsPanel = document.getElementById('settings-panel');
 const bgToggle    = document.getElementById('bg-toggle');
+const completeToggle = document.getElementById('complete-toggle');
+const scoreToggle = document.getElementById('score-toggle');
 const sidebar     = document.getElementById('sidebar');
 const sidebarList = document.getElementById('sidebar-nav-list');
 const backToTop   = document.getElementById('back-to-top');
@@ -1027,6 +1067,34 @@ function toggleBackground() {
     const on = !bgToggle.classList.contains('on');
     localStorage.setItem('bb_bgEnabled', on ? 'true' : 'false');
     applyBackground(on);
+}
+
+/* ============================================================
+   COMPLETION TRACKER TOGGLE
+============================================================ */
+function applyCompletionTracker(on) {
+    completeToggle.classList.toggle('on', on);
+    completeToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+    renderCompletion();   // re-renders buttons + completed dimming per the flag
+}
+function toggleCompletionTracker() {
+    const on = !completeToggle.classList.contains('on');
+    localStorage.setItem('bb_completeEnabled', on ? 'true' : 'false');
+    applyCompletionTracker(on);
+}
+
+/* ============================================================
+   SCORE TRACKER TOGGLE
+============================================================ */
+function applyScoreTracker(on) {
+    scoreToggle.classList.toggle('on', on);
+    scoreToggle.setAttribute('aria-checked', on ? 'true' : 'false');
+    renderScores();
+}
+function toggleScoreTracker() {
+    const on = !scoreToggle.classList.contains('on');
+    localStorage.setItem('bb_scoreEnabled', on ? 'true' : 'false');
+    applyScoreTracker(on);
 }
 
 function toggleSettings() {
@@ -1086,36 +1154,73 @@ window.addEventListener('scroll', () => {
 });
 
 /* ============================================================
-   MARK COMPLETE
-   Saves a per-quiz completion map. The same keys can be read by
-   quiz pages later if you want completion to sync both ways.
+   MARK COMPLETE & SCORES
+   localStorage format (shared with quiz pages for persistence):
+     bb_completed  -> { "w51p1": true, ... }
+     bb_scores     -> { "w51p1": { correct: 8, total: 10, ts: 1700000000000 }, ... }
+   Quiz pages should WRITE to bb_scores (and optionally bb_completed)
+   using the same data-quiz id as the card here, e.g. "w51p1".
 ============================================================ */
-function getCompleted() {
-    return JSON.parse(localStorage.getItem('bb_completed') || '{}');
+function getCompleted() { return JSON.parse(localStorage.getItem('bb_completed') || '{}'); }
+function setCompleted(map) { localStorage.setItem('bb_completed', JSON.stringify(map)); }
+function getScores() { return JSON.parse(localStorage.getItem('bb_scores') || '{}'); }
+
+const completeEnabled = () => completeToggle.classList.contains('on');
+const scoreEnabled    = () => scoreToggle.classList.contains('on');
+
+/* Attach the click handlers once */
+function wireCompletion() {
+    document.querySelectorAll('.part-card[data-quiz]').forEach(card => {
+        const btn = card.querySelector('.complete-btn');
+        if (!btn) return;
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const id = card.dataset.quiz;
+            const map = getCompleted();
+            const nowDone = !map[id];
+            if (nowDone) map[id] = true; else delete map[id];
+            setCompleted(map);
+            renderCompletion();
+        });
+    });
 }
-function setCompleted(map) {
-    localStorage.setItem('bb_completed', JSON.stringify(map));
-}
-function initCompletion() {
+
+/* Render completion buttons + dimming based on the toggle */
+function renderCompletion() {
     const done = getCompleted();
+    const on = completeEnabled();
     document.querySelectorAll('.part-card[data-quiz]').forEach(card => {
         const id = card.dataset.quiz;
         const btn = card.querySelector('.complete-btn');
         if (!btn) return;
         const isDone = !!done[id];
-        card.classList.toggle('completed', isDone);
+        btn.classList.toggle('hidden', !on);
+        // Only show the "completed" dimming/colour when the tracker is on
+        card.classList.toggle('completed', on && isDone);
         btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
         btn.querySelector('.complete-text').textContent = isDone ? 'Completed' : 'Done';
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const map = getCompleted();
-            const nowDone = !map[id];
-            if (nowDone) map[id] = true; else delete map[id];
-            setCompleted(map);
-            card.classList.toggle('completed', nowDone);
-            btn.setAttribute('aria-pressed', nowDone ? 'true' : 'false');
-            btn.querySelector('.complete-text').textContent = nowDone ? 'Completed' : 'Done';
-        });
+    });
+}
+
+/* Render score chips based on the toggle + saved scores */
+function renderScores() {
+    const scores = getScores();
+    const on = scoreEnabled();
+    document.querySelectorAll('.part-card[data-quiz]').forEach(card => {
+        const id = card.dataset.quiz;
+        const chip = card.querySelector('.score-chip');
+        if (!chip) return;
+        if (!on) { chip.classList.remove('show'); return; }
+        const s = scores[id];
+        if (s && s.total > 0) {
+            const pct = Math.round((s.correct / s.total) * 100);
+            chip.classList.remove('empty');
+            chip.innerHTML = `${s.correct} / ${s.total} <span class="score-pct">· ${pct}%</span>`;
+        } else {
+            chip.classList.add('empty');
+            chip.textContent = 'No score yet';
+        }
+        chip.classList.add('show');
     });
 }
 
@@ -1190,6 +1295,7 @@ function updateCustomTheme() {
     root.style.setProperty('--bg-active', accent + '28');
     root.style.setProperty('--bg-hover', accent + '14');
     root.style.setProperty('--text-main', text);
+    root.style.setProperty('--topic-color', text);
     root.style.setProperty('--text-accent', accent);
     root.style.setProperty('--text-accent-2', accent);
     root.style.setProperty('--button-bg', accent);
@@ -1201,6 +1307,11 @@ function updateCustomTheme() {
     root.style.setProperty('--card-glow', accent + '40');
     root.style.setProperty('--hero-glow-1', accent + '33');
     root.style.setProperty('--hero-glow-2', accent + '1f');
+    // In custom mode every part uses the single chosen accent
+    root.style.setProperty('--part-1', accent);
+    root.style.setProperty('--part-2', accent);
+    root.style.setProperty('--part-3', accent);
+    root.style.setProperty('--part-4', accent);
     const r = parseInt(accent.slice(1,3),16), g = parseInt(accent.slice(3,5),16), b = parseInt(accent.slice(5,7),16);
     root.style.setProperty('--neural-rgb', `${r},${g},${b}`);
     localStorage.setItem('bb_customColors', JSON.stringify({ bg, card, text, accent }));
@@ -1254,9 +1365,9 @@ async function fetchDailyVisitors() {
         const res = await fetch(proxyUrl);
         if (!res.ok) throw new Error('proxy error');
         const data = await res.json();
-        el.textContent = `Visitors: ${data.visitors}`;
+        el.textContent = `Visitors Today: ${data.visitors}`;
     } catch (err) {
-        el.textContent = 'Visitors: —';
+        el.textContent = 'Visitors Today: —';
         console.warn('Visitor counter:', err);
     }
 }
@@ -1299,11 +1410,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     buildNavigation();
-    initCompletion();
+    wireCompletion();
     requestAnimationFrame(syncHeaderHeight);
 
-    // Restore animated background preference (default: on)
+    // Restore display preferences (defaults: background ON, completion ON, score OFF)
     applyBackground(localStorage.getItem('bb_bgEnabled') !== 'false');
+    applyCompletionTracker(localStorage.getItem('bb_completeEnabled') !== 'false');
+    applyScoreTracker(localStorage.getItem('bb_scoreEnabled') === 'true');
 
     fetchDailyVisitors();
     checkSiteUpdate();
