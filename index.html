@@ -56,6 +56,41 @@
         --hero-glow-2: rgba(56,189,248,0.18);
     }
 
+    /* Slate Blue — the original slate-blue palette */
+    [data-theme="blue"] {
+        --bg-body: #1e293b;
+        --bg-card: #334155;
+        --bg-card-hover: #3d4c63;
+        --bg-header: rgba(15,23,42,0.85);
+        --bg-sidebar: rgba(20,30,48,0.78);
+        --bg-input: #2c3a50;
+        --bg-active: rgba(56,189,248,0.2);
+        --bg-hover: rgba(56,189,248,0.1);
+        --text-main: #f1f5f9;
+        --topic-color: #ffffff;
+        --text-muted: #94a3b8;
+        --text-accent: #38bdf8;
+        --text-accent-2: #5eead4;
+        --border-color: rgba(56,189,248,0.3);
+        --border-subtle: rgba(148,163,184,0.18);
+        --button-bg: #38bdf8;
+        --button-text: #0f172a;
+        --btn-disabled-bg: rgba(255,255,255,0.05);
+        --btn-disabled-text: #94a3b8;
+        --btn-disabled-border: rgba(148,163,184,0.25);
+        --live-dot: #34d399;
+        --part-1: #38bdf8;
+        --part-2: #818cf8;
+        --part-3: #34d399;
+        --part-4: #fb923c;
+        --neural-rgb: 56,189,248;
+        --card-glow: rgba(56,189,248,0.35);
+        --select-bg: #2c3a50;
+        --select-text: #f1f5f9;
+        --hero-glow-1: rgba(56,189,248,0.26);
+        --hero-glow-2: rgba(129,140,248,0.18);
+    }
+
     /* Midnight */
     [data-theme="midnight"] {
         --bg-body: #000000;
@@ -101,6 +136,7 @@
         --bg-active: rgba(124,58,237,0.1);
         --bg-hover: rgba(124,58,237,0.05);
         --text-main: #1f1b3a;
+        --topic-color: #1f1b3a;
         --text-muted: #6b7280;
         --text-accent: #7c3aed;
         --text-accent-2: #0891b2;
@@ -135,6 +171,7 @@
         --bg-active: rgba(160,90,44,0.14);
         --bg-hover: rgba(160,90,44,0.06);
         --text-main: #433422;
+        --topic-color: #433422;
         --text-muted: #857458;
         --text-accent: #a05a2c;
         --text-accent-2: #6b7a3a;
@@ -579,15 +616,13 @@
     .part-card[data-part="anki"] .part-label { color: #f59e0b; }
     .part-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
-    .part-title { font-size: 1.02rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.7rem; line-height: 1.3; }
-
-    .topic-list { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .topic-list { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-top: 0.55rem; }
     .topic-item {
-        font-size: 0.82rem; color: var(--text-muted);
-        display: flex; align-items: flex-start; gap: 8px; line-height: 1.45;
+        font-size: 0.9rem; color: var(--topic-color, #ffffff); font-weight: 500;
+        display: flex; align-items: flex-start; gap: 8px; line-height: 1.5;
     }
     .topic-item::before { content: '›'; color: var(--text-accent); font-weight: 700; flex-shrink: 0; }
-    .sub-note { font-size: 0.76rem; font-style: italic; color: var(--text-muted); opacity: 0.85; margin-top: 5px; }
+    .sub-note { font-size: 0.78rem; font-style: italic; color: var(--text-muted); opacity: 0.85; margin-top: 6px; }
     .sub-note::before { content: 'ℹ'; margin-right: 6px; }
 
     .take-btn {
@@ -741,8 +776,9 @@
 
         <select id="theme-select" title="Choose colour theme">
             <option value="dark">Neural Dark</option>
+            <option value="blue">Slate Blue</option>
             <option value="midnight">Midnight</option>
-            <option value="light">Neural Light</option>
+            <option value="light">Modern Light</option>
             <option value="sepia">Sepia</option>
             <option value="contrast">High Contrast</option>
             <option value="custom">⚙️ Custom…</option>
@@ -813,7 +849,6 @@
                     <article class="part-card" data-part="1" data-quiz="w51p1">
                         <div class="part-body">
                             <div class="part-label"><span class="part-dot"></span>Part 1</div>
-                            <div class="part-title">CNS Organization &amp; Foundations</div>
                             <ul class="topic-list">
                                 <li class="topic-item">Organization, Structure &amp; Function of the CNS</li>
                                 <li class="topic-item">Spinal Cord: Neuroanatomy, Pathways &amp; Blood Supply</li>
@@ -832,7 +867,6 @@
                     <article class="part-card" data-part="2" data-quiz="w51p2">
                         <div class="part-body">
                             <div class="part-label"><span class="part-dot"></span>Part 2</div>
-                            <div class="part-title">Cerebrum, Brainstem &amp; Imaging</div>
                             <ul class="topic-list">
                                 <li class="topic-item">Cerebrum: Neuroanatomy, Function &amp; Blood Supply</li>
                                 <li class="topic-item">Brainstem: Neuroanatomy, Function &amp; Blood Supply</li>
@@ -850,7 +884,6 @@
                     <article class="part-card" data-part="3" data-quiz="w51p3">
                         <div class="part-body">
                             <div class="part-label"><span class="part-dot"></span>Part 3</div>
-                            <div class="part-title">CSF, Motor Pathways &amp; Cases</div>
                             <ul class="topic-list">
                                 <li class="topic-item">CSF and Intracranial Pressure</li>
                                 <li class="topic-item">Upper / Lower Motor Neuron Pathways</li>
@@ -868,7 +901,6 @@
                     <article class="part-card" data-part="4" data-quiz="w51p4">
                         <div class="part-body">
                             <div class="part-label"><span class="part-dot"></span>Part 4</div>
-                            <div class="part-title">Basal Ganglia, Development &amp; Vasculature</div>
                             <ul class="topic-list">
                                 <li class="topic-item">Face and Scalp</li>
                                 <li class="topic-item">Development of the CNS</li>
