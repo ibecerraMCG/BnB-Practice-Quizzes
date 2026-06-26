@@ -730,6 +730,15 @@
         max-width: 1040px; margin: 0 auto; width: 100%;
     }
 
+    #site-footer {
+        position: relative; z-index: 1;
+        text-align: center; padding: 1.8rem 1rem 2.4rem;
+        color: var(--text-muted); font-size: 0.74rem; line-height: 1.6;
+        border-top: 1px solid var(--border-subtle);
+    }
+    #site-footer a { color: inherit; text-decoration: none; border-bottom: 1px solid var(--border-subtle); }
+    #site-footer a:hover { color: var(--text-accent); border-bottom-color: var(--text-accent); }
+
     /* ============================================================
        HERO
     ============================================================ */
@@ -1098,21 +1107,22 @@
         <div id="sidebar-nav-list"></div>
 
         <div class="sidebar-tools">
-            <button id="jump-incomplete-btn" class="sidebar-tool-btn" onclick="jumpToFirstIncomplete()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                <span>Jump to first incomplete</span>
-            </button>
             <button id="collapse-all-btn" class="sidebar-tool-btn" onclick="toggleAllWeeks()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
                 <span id="collapse-all-label">Collapse all weeks</span>
             </button>
 
-            <div id="completion-filter" class="filter-group" style="display:none;">
+            <div id="completion-tools" class="filter-group" style="display:none;">
                 <div class="filter-label">Show</div>
                 <div class="filter-btns">
                     <button class="filter-btn active" data-filter="all" onclick="setCompletionFilter('all')">All</button>
                     <button class="filter-btn" data-filter="incomplete" onclick="setCompletionFilter('incomplete')">Incomplete</button>
                     <button class="filter-btn" data-filter="complete" onclick="setCompletionFilter('complete')">Complete</button>
+                </div>
+                <div class="filter-label" style="margin-top:11px;">Mark all</div>
+                <div class="filter-btns">
+                    <button class="filter-btn" onclick="markAll(true)">Complete</button>
+                    <button class="filter-btn" onclick="markAll(false)">Incomplete</button>
                 </div>
             </div>
         </div>
@@ -1224,6 +1234,8 @@
     </main>
 </div>
 
+<footer id="site-footer">Created by Ian Becerra &middot; <a href="mailto:ibecerra@augusta.edu">ibecerra@augusta.edu</a> &middot; Medical College of Georgia, Class of 2029</footer>
+
 </div>
 
 <button id="back-to-top" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
@@ -1232,7 +1244,7 @@
 /* ============================================================
    ANIMATED BACKGROUND ENGINE — multiple styles
    window.bgFx.start() / .stop() / .setStyle(name)
-   Styles: neural (default), constellation, bubbles, grid, waves
+   Styles: neural (default), starfield, bubbles, grid, waves
 ============================================================ */
 (function () {
     const canvas = document.getElementById('neural-bg');
@@ -1374,8 +1386,8 @@
         if (!running) return;
         ctx.clearRect(0, 0, W, H);
         t += 0.016;
-        if (style === 'neural') drawNeural(false);
-        else if (style === 'constellation') drawNeural(true);
+        if (style === 'neural') drawNeural();
+        else if (style === 'starfield') drawStarfield();
         else if (style === 'bubbles') drawBubbles();
         else if (style === 'grid') drawGrid();
         else if (style === 'waves') drawWaves();
@@ -1467,11 +1479,9 @@ function toggleAccents() {
 function applyCompletionTracker(on) {
     completeToggle.classList.toggle('on', on);
     completeToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-    // The completion filter + jump-to-incomplete only make sense when tracking is on
-    const filterGroup = document.getElementById('completion-filter');
-    const jumpBtn = document.getElementById('jump-incomplete-btn');
-    if (filterGroup) filterGroup.style.display = on ? 'block' : 'none';
-    if (jumpBtn) jumpBtn.style.display = on ? 'flex' : 'none';
+    // The completion filter + mark-all controls only make sense when tracking is on
+    const tools = document.getElementById('completion-tools');
+    if (tools) tools.style.display = on ? 'block' : 'none';
     if (!on) setCompletionFilter('all');  // clear any filtering when turned off
     renderCompletion();   // re-renders buttons + completed dimming per the flag
 }
@@ -1482,12 +1492,12 @@ function toggleCompletionTracker() {
 }
 
 /* ============================================================
-   COMPLETION FILTER + JUMP TO FIRST INCOMPLETE
+   COMPLETION FILTER + MARK ALL
 ============================================================ */
 let completionFilter = 'all';
 function setCompletionFilter(mode) {
     completionFilter = mode;
-    document.querySelectorAll('.filter-btn').forEach(b =>
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(b =>
         b.classList.toggle('active', b.dataset.filter === mode));
     applyCompletionFilter();
 }
@@ -1508,20 +1518,17 @@ function applyCompletionFilter() {
         sec.style.display = hasVisible ? '' : 'none';
     });
 }
-function jumpToFirstIncomplete() {
-    const done = getCompleted();
-    const cards = [...document.querySelectorAll('.part-card[data-quiz]')];
-    const target = cards.find(c => !done[c.dataset.quiz]);
-    if (!target) { alert('All quizzes are marked complete. Nice work!'); return; }
-    // make sure its week is expanded
-    const sec = target.closest('.week-section');
-    if (sec && sec.classList.contains('collapsed')) toggleWeek(sec.id);
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    // brief highlight
-    target.style.transition = 'box-shadow 0.3s';
-    target.style.boxShadow = '0 0 0 2px var(--text-accent)';
-    setTimeout(() => { target.style.boxShadow = ''; }, 1400);
-    if (window.innerWidth <= 768) sidebar.classList.add('collapsed');
+/* Mark every quiz complete (true) or clear all completion (false) */
+function markAll(done) {
+    const map = {};
+    if (done) {
+        document.querySelectorAll('.part-card[data-quiz]').forEach(card => {
+            map[card.dataset.quiz] = true;
+        });
+    }
+    setCompleted(map);          // when done=false this saves an empty map
+    renderCompletion();
+    applyCompletionFilter();
 }
 
 /* ============================================================
