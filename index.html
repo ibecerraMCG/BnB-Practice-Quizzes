@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Brain &amp; Behavior — Practice Quiz Directory</title>
+    <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🧠&lt;/text&gt;&lt;/svg&gt;">
 
     <!-- Umami Analytics — replace website-id with your B&B site ID when ready -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="YOUR-BB-WEBSITE-ID"></script>
@@ -454,6 +455,7 @@
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .brand-sub { font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; }
+    .brand-short { display: none; }
 
     /* Header controls */
     .header-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
@@ -566,6 +568,9 @@
     #settings-panel.open { display: block; }
     .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 0; }
     .settings-row + .settings-row { border-top: 1px solid var(--border-subtle); }
+    /* No divider directly above or below an inset sub-row card */
+    .settings-row + .settings-subrow,
+    .settings-subrow + .settings-row { border-top: none; }
     .settings-row:first-child { padding-top: 2px; }
     .settings-row:last-child { padding-bottom: 2px; }
     .settings-title { font-size: 0.84rem; font-weight: 600; color: var(--text-main); }
@@ -581,11 +586,24 @@
     .reset-btn:hover { background: #f87171; color: #fff; border-color: #f87171; }
     .reset-btn.confirm { background: #f87171; color: #fff; border-color: #f87171; }
     .settings-subrow {
-        padding-left: 16px; margin-left: 4px;
-        border-left: 2px solid var(--border-subtle);
+        margin: 4px 0 2px; padding: 10px 12px;
+        background: var(--bg-input); border-radius: 10px;
+        border-top: none !important;
     }
-    .settings-subrow + .settings-subrow { border-top: 1px solid var(--border-subtle); }
-    .settings-subrow .settings-title { font-weight: 500; font-size: 0.8rem; }
+    .settings-subrow .settings-title { font-weight: 600; font-size: 0.8rem; }
+    /* Tie a sub-row visually to the toggle directly above it */
+    .settings-row:has(+ .settings-subrow) { padding-bottom: 4px; }
+    .btn-pair { flex-shrink: 0; display: inline-flex; gap: 6px; }
+    .pair-btn {
+        font-family: var(--font-main); font-size: 0.74rem; font-weight: 700;
+        cursor: pointer; padding: 6px 12px; border-radius: 7px;
+        background: var(--bg-card); color: var(--text-accent);
+        border: 1px solid var(--border-color);
+        transition: background 0.18s, color 0.18s, border-color 0.18s;
+    }
+    .pair-btn:hover { background: var(--text-accent); color: var(--button-text); border-color: var(--text-accent); }
+    .pair-btn.danger { color: #f87171; border-color: rgba(248,113,113,0.5); background: var(--bg-card); }
+    .pair-btn.danger:hover, .pair-btn.danger.confirm { background: #f87171; color: #fff; border-color: #f87171; }
     .mini-select {
         flex-shrink: 0; height: 30px; padding: 0 8px; border-radius: 8px;
         border: 1px solid var(--border-color); background: var(--select-bg);
@@ -944,6 +962,8 @@
     }
     @media (max-width: 480px) {
         .updated-chip { display: none; }
+        .brand-full { display: none; }
+        .brand-short { display: inline; }
     }
     @media (prefers-reduced-motion: reduce) {
         *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
@@ -984,7 +1004,7 @@
             </svg>
         </div>
         <div class="brand-text">
-            <div class="brand-title">Brain &amp; Behavior</div>
+            <div class="brand-title"><span class="brand-full">Brain &amp; Behavior</span><span class="brand-short">B&amp;B</span></div>
             <div class="brand-sub">Practice Quiz Directory</div>
         </div>
     </div>
@@ -1006,7 +1026,7 @@
             <option value="navy">Navy</option>
             <option value="light">Modern Light</option>
             <option value="sepia">Sepia</option>
-            <option value="slate">Slate</option>
+            <option value="slate">Slate Blue</option>
             <option value="charcoal">Charcoal</option>
             <option value="forest">Forest</option>
             <option value="plum">Plum</option>
@@ -1066,6 +1086,15 @@
                 <span class="toggle-knob"></span>
             </button>
         </div>
+        <div class="settings-row settings-subrow settings-action mark-all-row" id="mark-all-row" style="display:none;">
+            <div class="settings-text">
+                <div class="settings-title">Mark all quizzes</div>
+            </div>
+            <div class="btn-pair">
+                <button class="pair-btn" onclick="markAll(true)">Complete</button>
+                <button class="pair-btn" onclick="markAll(false)">Incomplete</button>
+            </div>
+        </div>
         <div class="settings-row">
             <div class="settings-text">
                 <div class="settings-title">Score tracker</div>
@@ -1077,17 +1106,13 @@
         </div>
         <div class="settings-row settings-subrow settings-action reset-scores-row" style="display:none;">
             <div class="settings-text">
-                <div class="settings-title">Latest week's scores</div>
-                <div class="settings-sub" id="reset-week-sub">Clear scores from the most recent week</div>
+                <div class="settings-title">Reset scores</div>
+                <div class="settings-sub" id="reset-week-sub">Clear the latest week or everything</div>
             </div>
-            <button id="reset-week-btn" class="reset-btn" onclick="resetLatestWeekScores()">Reset</button>
-        </div>
-        <div class="settings-row settings-subrow settings-action reset-scores-row" style="display:none;">
-            <div class="settings-text">
-                <div class="settings-title">All saved scores</div>
-                <div class="settings-sub">Clear every saved quiz score</div>
+            <div class="btn-pair">
+                <button id="reset-week-btn" class="pair-btn danger" onclick="resetLatestWeekScores()">Latest</button>
+                <button id="reset-scores-btn" class="pair-btn danger" onclick="resetScores()">All</button>
             </div>
-            <button id="reset-scores-btn" class="reset-btn" onclick="resetScores()">Reset</button>
         </div>
     </div>
 </header>
@@ -1118,11 +1143,6 @@
                     <button class="filter-btn active" data-filter="all" onclick="setCompletionFilter('all')">All</button>
                     <button class="filter-btn" data-filter="incomplete" onclick="setCompletionFilter('incomplete')">Incomplete</button>
                     <button class="filter-btn" data-filter="complete" onclick="setCompletionFilter('complete')">Complete</button>
-                </div>
-                <div class="filter-label" style="margin-top:11px;">Mark all</div>
-                <div class="filter-btns">
-                    <button class="filter-btn" onclick="markAll(true)">Complete</button>
-                    <button class="filter-btn" onclick="markAll(false)">Incomplete</button>
                 </div>
             </div>
         </div>
@@ -1479,9 +1499,11 @@ function toggleAccents() {
 function applyCompletionTracker(on) {
     completeToggle.classList.toggle('on', on);
     completeToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-    // The completion filter + mark-all controls only make sense when tracking is on
+    // The sidebar filter + the settings mark-all row only make sense when tracking is on
     const tools = document.getElementById('completion-tools');
     if (tools) tools.style.display = on ? 'block' : 'none';
+    const markAllRow = document.getElementById('mark-all-row');
+    if (markAllRow) markAllRow.style.display = on ? 'flex' : 'none';
     if (!on) setCompletionFilter('all');  // clear any filtering when turned off
     renderCompletion();   // re-renders buttons + completed dimming per the flag
 }
@@ -1560,27 +1582,30 @@ function latestWeekNumber() {
 function updateLatestWeekLabel() {
     const wk = latestWeekNumber();
     const sub = document.getElementById('reset-week-sub');
-    if (sub && wk) sub.textContent = `Clear scores from Week ${wk}`;
+    if (sub) sub.textContent = wk ? `Latest = Week ${wk}` : 'Clear the latest week or everything';
+    const btn = document.getElementById('reset-week-btn');
+    if (btn && wk) btn.title = `Clear Week ${wk} scores`;
 }
 
 /* Reusable two-tap confirm. action() does the actual work. */
 function armConfirm(btn, action) {
+    const original = btn._label || (btn._label = btn.textContent);
     if (btn._armed) {
         clearTimeout(btn._timer);
         btn._armed = false;
         action();
-        btn.textContent = 'Cleared';
+        btn.textContent = '✓';
         btn.classList.remove('confirm');
         renderScores();
-        setTimeout(() => { btn.textContent = 'Reset'; }, 1500);
+        setTimeout(() => { btn.textContent = original; }, 1200);
         return;
     }
     btn._armed = true;
-    btn.textContent = 'Confirm?';
+    btn.textContent = 'Sure?';
     btn.classList.add('confirm');
     btn._timer = setTimeout(() => {
         btn._armed = false;
-        btn.textContent = 'Reset';
+        btn.textContent = original;
         btn.classList.remove('confirm');
     }, 3000);
 }
