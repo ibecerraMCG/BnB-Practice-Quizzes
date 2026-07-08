@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="navy">
+<html lang="en" data-theme="slate">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -504,17 +504,6 @@
         100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
     }
 
-    /* Pin */
-    #pin-btn {
-        background: none; border: 1px solid var(--border-color);
-        color: var(--text-main); width: 34px; height: 34px;
-        border-radius: 9px; cursor: pointer; font-size: 0.95rem;
-        display: flex; align-items: center; justify-content: center;
-        transition: background 0.2s, border-color 0.2s;
-    }
-    #pin-btn:hover { background: var(--bg-hover); }
-    #pin-btn.pin-active { background: var(--bg-active); border-color: var(--text-accent); }
-
     /* Theme select */
     #theme-select {
         height: 34px; padding: 0 10px;
@@ -717,6 +706,16 @@
         border-color: var(--border-color);
     }
 
+    /* Completion tracker (functional — lives in the sidebar) */
+    .sb-comp { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle); }
+    .sb-comp-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .sb-comp-title { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+    #completion-extra { margin-top: 12px; }
+    .sb-markall-label { display: block; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 7px; }
+    .sb-markall .btn-pair { display: flex; gap: 5px; }
+    .sb-markall .pair-btn { flex: 1; }
+    #completion-extra .filter-group { margin-top: 12px; padding-top: 12px; }
+
     .sidebar-week-btn {
         width: 100%; display: flex; align-items: center; gap: 11px;
         padding: 0.55rem 1.1rem; background: none; border: none;
@@ -900,20 +899,8 @@
     .part-card.completed .complete-check { border-color: #fff; }
     .part-card.completed:hover { opacity: 0.9; }
 
-    /* Score chip */
-    .score-chip {
-        display: none; align-items: center; justify-content: center; gap: 5px;
-        font-size: 0.72rem; font-weight: 700;
-        padding: 5px 12px; border-radius: 20px;
-        background: var(--bg-active); color: var(--text-accent);
-        white-space: nowrap; text-align: center;
-    }
-    .score-chip.show { display: inline-flex; }
-    .score-chip.empty { background: none; border: 1px dashed var(--border-color); color: var(--text-muted); font-weight: 600; }
-    .score-chip .score-pct { opacity: 0.8; font-weight: 600; }
-
     /* Hidden via settings toggle */
-    .complete-btn.hidden, .score-chip.hidden { display: none !important; }
+    .complete-btn.hidden { display: none !important; }
 
     /* ============================================================
        NO RESULTS
@@ -1020,16 +1007,14 @@
             <button id="update-refresh-btn" onclick="window.location.reload(true)" title="New quiz posted! Refresh.">✨ Refresh</button>
         </div>
 
-        <button id="pin-btn" class="pin-active" onclick="toggleHeader()" title="Pin / Unpin header">📌</button>
-
         <select id="theme-select" title="Choose colour theme">
-            <option value="navy">Navy</option>
+            <option value="slate">Slate Blue</option>
             <option value="light">Modern Light</option>
             <option value="sepia">Sepia</option>
-            <option value="slate">Slate Blue</option>
             <option value="charcoal">Charcoal</option>
             <option value="forest">Forest</option>
             <option value="plum">Plum</option>
+            <option value="navy">Navy</option>
             <option value="midnight">Midnight</option>
             <option value="contrast">High Contrast</option>
             <option value="custom">⚙️ Custom…</option>
@@ -1039,10 +1024,10 @@
     </div>
 
     <div id="custom-builder">
-        <div class="cpg"><label>Background</label><input type="color" id="color-bg" value="#0b1430" oninput="updateCustomTheme()"></div>
-        <div class="cpg"><label>Cards</label><input type="color" id="color-card" value="#13203f" oninput="updateCustomTheme()"></div>
-        <div class="cpg"><label>Text</label><input type="color" id="color-text" value="#eef2fb" oninput="updateCustomTheme()"></div>
-        <div class="cpg"><label>Accent</label><input type="color" id="color-accent" value="#6ea8fe" oninput="updateCustomTheme()"></div>
+        <div class="cpg"><label>Background</label><input type="color" id="color-bg" value="#1e293b" oninput="updateCustomTheme()"></div>
+        <div class="cpg"><label>Cards</label><input type="color" id="color-card" value="#334155" oninput="updateCustomTheme()"></div>
+        <div class="cpg"><label>Text</label><input type="color" id="color-text" value="#f1f5f9" oninput="updateCustomTheme()"></div>
+        <div class="cpg"><label>Accent</label><input type="color" id="color-accent" value="#38bdf8" oninput="updateCustomTheme()"></div>
     </div>
 
     <div id="settings-panel">
@@ -1079,40 +1064,12 @@
         </div>
         <div class="settings-row">
             <div class="settings-text">
-                <div class="settings-title">Completion tracker</div>
-                <div class="settings-sub">Mark quizzes as done</div>
+                <div class="settings-title">Pinned header</div>
+                <div class="settings-sub">Keep the header fixed while scrolling</div>
             </div>
-            <button id="complete-toggle" class="toggle-switch on" role="switch" aria-checked="true" onclick="toggleCompletionTracker()">
+            <button id="pin-toggle" class="toggle-switch on" role="switch" aria-checked="true" onclick="toggleHeader()">
                 <span class="toggle-knob"></span>
             </button>
-        </div>
-        <div class="settings-row settings-subrow settings-action mark-all-row" id="mark-all-row" style="display:none;">
-            <div class="settings-text">
-                <div class="settings-title">Mark all quizzes</div>
-            </div>
-            <div class="btn-pair">
-                <button class="pair-btn" onclick="markAll(true)">Complete</button>
-                <button class="pair-btn" onclick="markAll(false)">Incomplete</button>
-            </div>
-        </div>
-        <div class="settings-row">
-            <div class="settings-text">
-                <div class="settings-title">Score tracker</div>
-                <div class="settings-sub">Show your latest quiz scores</div>
-            </div>
-            <button id="score-toggle" class="toggle-switch" role="switch" aria-checked="false" onclick="toggleScoreTracker()">
-                <span class="toggle-knob"></span>
-            </button>
-        </div>
-        <div class="settings-row settings-subrow settings-action reset-scores-row" style="display:none;">
-            <div class="settings-text">
-                <div class="settings-title">Reset scores</div>
-                <div class="settings-sub" id="reset-week-sub">Clear the latest week or everything</div>
-            </div>
-            <div class="btn-pair">
-                <button id="reset-week-btn" class="pair-btn danger" onclick="resetLatestWeekScores()">Latest</button>
-                <button id="reset-scores-btn" class="pair-btn danger" onclick="resetScores()">All</button>
-            </div>
         </div>
     </div>
 </header>
@@ -1137,12 +1094,29 @@
                 <span id="collapse-all-label">Collapse all weeks</span>
             </button>
 
-            <div id="completion-tools" class="filter-group" style="display:none;">
-                <div class="filter-label">Show</div>
-                <div class="filter-btns">
-                    <button class="filter-btn active" data-filter="all" onclick="setCompletionFilter('all')">All</button>
-                    <button class="filter-btn" data-filter="incomplete" onclick="setCompletionFilter('incomplete')">Incomplete</button>
-                    <button class="filter-btn" data-filter="complete" onclick="setCompletionFilter('complete')">Complete</button>
+            <div class="sb-comp">
+                <div class="sb-comp-toggle-row">
+                    <span class="sb-comp-title">Completion tracker</span>
+                    <button id="complete-toggle" class="toggle-switch on" role="switch" aria-checked="true" onclick="toggleCompletionTracker()">
+                        <span class="toggle-knob"></span>
+                    </button>
+                </div>
+                <div id="completion-extra">
+                    <div class="sb-markall">
+                        <span class="sb-markall-label">Mark all quizzes</span>
+                        <div class="btn-pair">
+                            <button class="pair-btn" onclick="markAll(true)">Complete</button>
+                            <button class="pair-btn" onclick="markAll(false)">Incomplete</button>
+                        </div>
+                    </div>
+                    <div id="completion-tools" class="filter-group">
+                        <div class="filter-label">Show</div>
+                        <div class="filter-btns">
+                            <button class="filter-btn active" data-filter="all" onclick="setCompletionFilter('all')">All</button>
+                            <button class="filter-btn" data-filter="incomplete" onclick="setCompletionFilter('incomplete')">Incomplete</button>
+                            <button class="filter-btn" data-filter="complete" onclick="setCompletionFilter('complete')">Complete</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1184,7 +1158,6 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
-                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1202,7 +1175,6 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
-                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1220,7 +1192,6 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
-                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1239,7 +1210,6 @@
                         </div>
                         <div class="part-actions">
                             <a href="#" class="take-btn disabled">Coming Soon</a>
-                            <span class="score-chip empty">No score yet</span>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1307,7 +1277,7 @@
     function drawNeural() {
         const rgb = getRGB(), MAX = 150;
         nodes.forEach(n => {
-            n.x += n.vx; n.y += n.vy; n.pulse += 0.016;
+            n.x += n.vx * 2; n.y += n.vy * 2; n.pulse += 0.032;
             if (n.x < -8) n.x = W + 8; if (n.x > W + 8) n.x = -8;
             if (n.y < -8) n.y = H + 8; if (n.y > H + 8) n.y = -8;
         });
@@ -1335,8 +1305,8 @@
     function drawStarfield() {
         const rgb = getRGB();
         stars.forEach(s => {
-            s.tw += 0.03 * s.ts;
-            s.y += s.drift;
+            s.tw += 0.06 * s.ts;
+            s.y += s.drift * 2;
             if (s.y > H + 2) { s.y = -2; s.x = Math.random() * W; }
             const a = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(s.tw));
             ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
@@ -1365,7 +1335,7 @@
     function drawBubbles() {
         const rgb = getRGB();
         orbs.forEach(o => {
-            o.x += o.vx; o.y += o.vy;
+            o.x += o.vx * 2; o.y += o.vy * 2;
             if (o.x < -o.r) o.x = W + o.r; if (o.x > W + o.r) o.x = -o.r;
             if (o.y < -o.r) o.y = H + o.r; if (o.y > H + o.r) o.y = -o.r;
             const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
@@ -1402,23 +1372,33 @@
         }
     }
 
-    function draw() {
+    /* Throttled render: cap to ~30fps and skip work when the tab is hidden.
+       Visually identical to 60fps for these slow motions, but roughly halves
+       GPU/CPU work so laptop fans don't spin up. Per-frame motion is doubled
+       (see drawNeural/starfield/bubbles and t) to keep the speed the same. */
+    const FRAME_MS = 1000 / 30;
+    let lastFrame = 0;
+    function draw(now) {
         if (!running) return;
+        rafId = requestAnimationFrame(draw);
+        if (document.hidden) return;
+        if (now - lastFrame < FRAME_MS) return;
+        lastFrame = now;
         ctx.clearRect(0, 0, W, H);
-        t += 0.016;
+        t += 0.032;
         if (style === 'neural') drawNeural();
         else if (style === 'starfield') drawStarfield();
         else if (style === 'bubbles') drawBubbles();
         else if (style === 'grid') drawGrid();
         else if (style === 'waves') drawWaves();
-        rafId = requestAnimationFrame(draw);
     }
     function start() {
         if (running) return;
         resize();
         running = true;
+        lastFrame = 0;
         canvas.style.display = '';
-        draw();
+        rafId = requestAnimationFrame(draw);
     }
     function stop() {
         running = false;
@@ -1431,6 +1411,7 @@
         seed();
     }
     window.addEventListener('resize', () => { if (running) resize(); });
+    document.addEventListener('visibilitychange', () => { if (running && !document.hidden) lastFrame = 0; });
     window.bgFx = { start, stop, setStyle };
 })();
 
@@ -1440,15 +1421,12 @@
 const root        = document.documentElement;
 const mainHeader  = document.getElementById('main-header');
 const themeSelect = document.getElementById('theme-select');
-const pinBtn      = document.getElementById('pin-btn');
 const customBuild = document.getElementById('custom-builder');
 const settingsBtn = document.getElementById('settings-btn');
 const settingsPanel = document.getElementById('settings-panel');
 const bgToggle    = document.getElementById('bg-toggle');
 const accentToggle = document.getElementById('accent-toggle');
 const completeToggle = document.getElementById('complete-toggle');
-const scoreToggle = document.getElementById('score-toggle');
-const resetScoresRows = document.querySelectorAll('.reset-scores-row');
 const sidebar     = document.getElementById('sidebar');
 const sidebarList = document.getElementById('sidebar-nav-list');
 const backToTop   = document.getElementById('back-to-top');
@@ -1499,11 +1477,9 @@ function toggleAccents() {
 function applyCompletionTracker(on) {
     completeToggle.classList.toggle('on', on);
     completeToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-    // The sidebar filter + the settings mark-all row only make sense when tracking is on
-    const tools = document.getElementById('completion-tools');
-    if (tools) tools.style.display = on ? 'block' : 'none';
-    const markAllRow = document.getElementById('mark-all-row');
-    if (markAllRow) markAllRow.style.display = on ? 'flex' : 'none';
+    // The mark-all buttons + completion filter only make sense when tracking is on
+    const extra = document.getElementById('completion-extra');
+    if (extra) extra.style.display = on ? '' : 'none';
     if (!on) setCompletionFilter('all');  // clear any filtering when turned off
     renderCompletion();   // re-renders buttons + completed dimming per the flag
 }
@@ -1551,83 +1527,6 @@ function markAll(done) {
     setCompleted(map);          // when done=false this saves an empty map
     renderCompletion();
     applyCompletionFilter();
-}
-
-/* ============================================================
-   SCORE TRACKER TOGGLE
-============================================================ */
-function applyScoreTracker(on) {
-    scoreToggle.classList.toggle('on', on);
-    scoreToggle.setAttribute('aria-checked', on ? 'true' : 'false');
-    resetScoresRows.forEach(r => r.style.display = on ? 'flex' : 'none');
-    if (on) updateLatestWeekLabel();
-    renderScores();
-}
-function toggleScoreTracker() {
-    const on = !scoreToggle.classList.contains('on');
-    localStorage.setItem('bb_scoreEnabled', on ? 'true' : 'false');
-    applyScoreTracker(on);
-}
-
-/* ============================================================
-   RESET SAVED SCORES (two-tap confirm)
-============================================================ */
-/* Find the latest week number present on the page (e.g. 51) */
-function latestWeekNumber() {
-    const nums = [...document.querySelectorAll('.week-section')]
-        .map(s => parseInt((s.id.match(/\d+/) || [0])[0], 10))
-        .filter(n => !isNaN(n));
-    return nums.length ? Math.max(...nums) : null;
-}
-function updateLatestWeekLabel() {
-    const wk = latestWeekNumber();
-    const sub = document.getElementById('reset-week-sub');
-    if (sub) sub.textContent = wk ? `Latest = Week ${wk}` : 'Clear the latest week or everything';
-    const btn = document.getElementById('reset-week-btn');
-    if (btn && wk) btn.title = `Clear Week ${wk} scores`;
-}
-
-/* Reusable two-tap confirm. action() does the actual work. */
-function armConfirm(btn, action) {
-    const original = btn._label || (btn._label = btn.textContent);
-    if (btn._armed) {
-        clearTimeout(btn._timer);
-        btn._armed = false;
-        action();
-        btn.textContent = '✓';
-        btn.classList.remove('confirm');
-        renderScores();
-        setTimeout(() => { btn.textContent = original; }, 1200);
-        return;
-    }
-    btn._armed = true;
-    btn.textContent = 'Sure?';
-    btn.classList.add('confirm');
-    btn._timer = setTimeout(() => {
-        btn._armed = false;
-        btn.textContent = original;
-        btn.classList.remove('confirm');
-    }, 3000);
-}
-
-function resetScores() {
-    armConfirm(document.getElementById('reset-scores-btn'), () => {
-        localStorage.removeItem('bb_scores');
-    });
-}
-
-function resetLatestWeekScores() {
-    armConfirm(document.getElementById('reset-week-btn'), () => {
-        const wk = latestWeekNumber();
-        if (!wk) return;
-        const scores = JSON.parse(localStorage.getItem('bb_scores') || '{}');
-        // quiz ids look like "w51p1" — drop any whose week matches
-        Object.keys(scores).forEach(id => {
-            const m = id.match(/^w(\d+)p/);
-            if (m && parseInt(m[1], 10) === wk) delete scores[id];
-        });
-        localStorage.setItem('bb_scores', JSON.stringify(scores));
-    });
 }
 
 function toggleSettings() {
@@ -1692,19 +1591,17 @@ window.addEventListener('scroll', () => {
 });
 
 /* ============================================================
-   MARK COMPLETE & SCORES
+   MARK COMPLETE
    localStorage format (shared with quiz pages for persistence):
      bb_completed  -> { "w51p1": true, ... }
-     bb_scores     -> { "w51p1": { correct: 8, total: 10, ts: 1700000000000 }, ... }
-   Quiz pages should WRITE to bb_scores (and optionally bb_completed)
-   using the same data-quiz id as the card here, e.g. "w51p1".
+   Completion is marked here on the directory (and can also be set by a
+   quiz page when it's graded), keyed by the same data-quiz id, e.g. "w51p1".
+   Scores are shown on the quiz page itself, not the directory.
 ============================================================ */
 function getCompleted() { return JSON.parse(localStorage.getItem('bb_completed') || '{}'); }
 function setCompleted(map) { localStorage.setItem('bb_completed', JSON.stringify(map)); }
-function getScores() { return JSON.parse(localStorage.getItem('bb_scores') || '{}'); }
 
 const completeEnabled = () => completeToggle.classList.contains('on');
-const scoreEnabled    = () => scoreToggle.classList.contains('on');
 
 /* Attach the click handlers once */
 function wireCompletion() {
@@ -1738,28 +1635,6 @@ function renderCompletion() {
         card.classList.toggle('completed', on && isDone);
         btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
         btn.querySelector('.complete-text').textContent = isDone ? 'Completed' : 'Done';
-    });
-}
-
-/* Render score chips based on the toggle + saved scores */
-function renderScores() {
-    const scores = getScores();
-    const on = scoreEnabled();
-    document.querySelectorAll('.part-card[data-quiz]').forEach(card => {
-        const id = card.dataset.quiz;
-        const chip = card.querySelector('.score-chip');
-        if (!chip) return;
-        if (!on) { chip.classList.remove('show'); return; }
-        const s = scores[id];
-        if (s && s.total > 0) {
-            const pct = Math.round((s.correct / s.total) * 100);
-            chip.classList.remove('empty');
-            chip.innerHTML = `${s.correct} / ${s.total} <span class="score-pct">· ${pct}%</span>`;
-        } else {
-            chip.classList.add('empty');
-            chip.textContent = 'No score yet';
-        }
-        chip.classList.add('show');
     });
 }
 
@@ -1946,7 +1821,11 @@ function toggleHeader(force) {
     const pinned = !mainHeader.classList.contains('unpinned');
     const next = typeof force === 'boolean' ? force : !pinned;
     mainHeader.classList.toggle('unpinned', !next);
-    pinBtn.classList.toggle('pin-active', next);
+    const pinToggle = document.getElementById('pin-toggle');
+    if (pinToggle) {
+        pinToggle.classList.toggle('on', next);
+        pinToggle.setAttribute('aria-checked', next ? 'true' : 'false');
+    }
     localStorage.setItem('bb_headerPinned', next ? 'true' : 'false');
     requestAnimationFrame(syncHeaderHeight);
 }
@@ -2003,7 +1882,7 @@ async function checkSiteUpdate() {
    INIT
 ============================================================ */
 document.addEventListener('DOMContentLoaded', () => {
-    const savedTheme = localStorage.getItem('bb_quizTheme') || 'navy';
+    const savedTheme = localStorage.getItem('bb_quizTheme') || 'slate';
     themeSelect.value = savedTheme;
     changeTheme(savedTheme);
 
@@ -2032,11 +1911,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (styleSelect) styleSelect.value = savedStyle;
     window.bgFx && window.bgFx.setStyle(savedStyle);
 
-    // Restore display preferences (defaults: background ON, accents ON, completion ON, score OFF)
+    // Restore display preferences (defaults: background ON, accents ON, completion ON)
     applyBackground(localStorage.getItem('bb_bgEnabled') !== 'false');
     applyAccents(localStorage.getItem('bb_accentsEnabled') !== 'false');
     applyCompletionTracker(localStorage.getItem('bb_completeEnabled') !== 'false');
-    applyScoreTracker(localStorage.getItem('bb_scoreEnabled') === 'true');
     syncCollapseAllBtn();
 
     fetchDailyVisitors();
