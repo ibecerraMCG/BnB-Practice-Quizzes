@@ -6,8 +6,8 @@
     <title>Brain &amp; Behavior — Practice Quiz Directory</title>
     <link rel="icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;text y=%22.9em%22 font-size=%2290%22&gt;🧠&lt;/text&gt;&lt;/svg&gt;">
 
-    <!-- Umami Analytics — replace website-id with your B&B site ID when ready -->
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="YOUR-BB-WEBSITE-ID"></script>
+    <!-- Umami Analytics — shared website; B&B traffic is tracked under its own path (/BnB-Practice-Quizzes/) -->
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="3cb2ed63-b477-4c85-a83f-7352712d49c9"></script>
 
     <style>
     /* ============================================================
@@ -59,7 +59,7 @@
         --hero-glow-2: rgba(126,224,208,0.14);
     }
 
-    /* Charcoal — neutral warm-grey dark */
+    /* Charcoal — neutral warm-gray dark */
     [data-theme="charcoal"] {
         --bg-body: #15171c;
         --bg-card: #1f232b;
@@ -95,7 +95,7 @@
         --hero-glow-2: rgba(159,208,192,0.1);
     }
 
-    /* Slate — blue-grey */
+    /* Slate — blue-gray */
     [data-theme="slate"] {
         --bg-body: #1e293b;
         --bg-card: #334155;
@@ -1007,7 +1007,7 @@
             <button id="update-refresh-btn" onclick="window.location.reload(true)" title="New quiz posted! Refresh.">✨ Refresh</button>
         </div>
 
-        <select id="theme-select" title="Choose colour theme">
+        <select id="theme-select" title="Choose color theme">
             <option value="slate">Slate Blue</option>
             <option value="light">Modern Light</option>
             <option value="sepia">Sepia</option>
@@ -1631,7 +1631,7 @@ function renderCompletion() {
         if (!btn) return;
         const isDone = !!done[id];
         btn.classList.toggle('hidden', !on);
-        // Only show the "completed" dimming/colour when the tracker is on
+        // Only show the "completed" dimming/color when the tracker is on
         card.classList.toggle('completed', on && isDone);
         btn.setAttribute('aria-pressed', isDone ? 'true' : 'false');
         btn.querySelector('.complete-text').textContent = isDone ? 'Completed' : 'Done';
@@ -1719,7 +1719,7 @@ function changeTheme(t) {
     }
 }
 themeSelect.addEventListener('change', e => changeTheme(e.target.value));
-// If Custom is already the active theme, reopen the colour pickers
+// If Custom is already the active theme, reopen the color pickers
 // the moment the user interacts with the dropdown again.
 themeSelect.addEventListener('mousedown', () => {
     if (themeSelect.value === 'custom') {
@@ -1755,7 +1755,7 @@ function updateCustomTheme() {
     root.style.setProperty('--card-glow', accent + '40');
     root.style.setProperty('--hero-glow-1', accent + '33');
     root.style.setProperty('--hero-glow-2', accent + '1f');
-    // Custom mode: build a multi-colour part palette by rotating the accent's hue,
+    // Custom mode: build a multi-color part palette by rotating the accent's hue,
     // so cards stay distinct (accents ON). When accents are OFF, CSS collapses
     // these to --solid-accent automatically.
     root.style.setProperty('--solid-accent', accent);
@@ -1769,7 +1769,7 @@ function updateCustomTheme() {
     localStorage.setItem('bb_customColors', JSON.stringify({ bg, card, text, accent }));
 }
 
-/* Build 4 related colours by rotating the hue around the chosen accent */
+/* Build 4 related colors by rotating the hue around the chosen accent */
 function paletteFromAccent(hex) {
     const {h, s, l} = hexToHsl(hex);
     const offsets = [0, 40, -40, 80];   // spread of hues
@@ -1832,10 +1832,10 @@ function toggleHeader(force) {
 
 /* ============================================================
    LIVE VISITOR COUNTER (Cloudflare Worker proxy)
-   Replace the URL with your Brain & Behavior worker when ready.
+   B&B worker — returns visitors for the /BnB-Practice-Quizzes/ path only.
 ============================================================ */
 async function fetchDailyVisitors() {
-    const proxyUrl = 'https://umami-proxy-giguendo.ianbecerra4.workers.dev/';
+    const proxyUrl = 'https://bnb-practice-quizzes.ianbecerra4.workers.dev/';
     const el = document.getElementById('visitor-count-display');
     try {
         const res = await fetch(proxyUrl);
