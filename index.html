@@ -1592,7 +1592,7 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
     if (!resizer) return;
     const root = document.documentElement;
     const KEY = 'bb_dirSidebarWidth';
-    const MIN = 200, MAX = 460, DEFAULT = 264;
+    const MIN = 150, MAX = 480, DEFAULT = 264;
 
     // Restore a saved width on load (desktop only — sidebar is an overlay on mobile).
     const saved = parseInt(localStorage.getItem(KEY), 10);
@@ -1657,49 +1657,15 @@ function buildNavigation() {
 /* ============================================================
    SCROLL EFFECTS
 ============================================================ */
-let navLock = false;   // set right after a sidebar click; released on the next manual scroll
-function setActiveWeek(id) {
-    document.querySelectorAll('.sidebar-week-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.target === id));
-}
-function updateActiveWeek() {
-    if (navLock) return;   // a sidebar click owns the highlight until the user scrolls
-    const sections = [...document.querySelectorAll('.week-section')];
-    if (!sections.length) return;
-    let active = sections[0].id;
-    // Normal case: the active week is the last one whose top has scrolled above the reference line.
-    for (const sec of sections) {
-        if (sec.getBoundingClientRect().top <= 130) active = sec.id;
-    }
-    // Bottom-of-page case: a short final week can never be scrolled above the line, so once the
-    // page can't scroll any further, the last week is the one being viewed — force it active.
-    if (Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 1) {
-        active = sections[sections.length - 1].id;
-    }
-    setActiveWeek(active);
-}
 window.addEventListener('scroll', () => {
     mainHeader.classList.toggle('scrolled', window.scrollY > 8);
     backToTop.classList.toggle('visible', window.scrollY > 380);
-    updateActiveWeek();
-});
-// Recompute on resize and zoom (viewport height changes which week can reach the line) and on load.
-window.addEventListener('resize', updateActiveWeek);
-window.addEventListener('load', updateActiveWeek);
-// Clicking a week in the sidebar highlights it and keeps it highlighted even when the page
-// can't scroll it all the way to the top (e.g. the last weeks on a tall/zoomed-out screen).
-document.addEventListener('click', e => {
-    const btn = e.target.closest ? e.target.closest('.sidebar-week-btn') : null;
-    if (btn) { navLock = true; setActiveWeek(btn.dataset.target); }
-});
-// A manual scroll hands control back to position-based highlighting.
-['wheel', 'touchmove'].forEach(ev => window.addEventListener(ev, () => {
-    if (navLock) { navLock = false; updateActiveWeek(); }
-}, { passive: true }));
-window.addEventListener('keydown', e => {
-    if (navLock && ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' ','Spacebar'].includes(e.key)) {
-        navLock = false; updateActiveWeek();
-    }
+    let active = null;
+    document.querySelectorAll('.week-section').forEach(sec => {
+        if (sec.getBoundingClientRect().top <= 130) active = sec.id;
+    });
+    document.querySelectorAll('.sidebar-week-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.target === active));
 });
 
 /* ============================================================
@@ -1817,22 +1783,26 @@ searchInput.addEventListener('input', function () {
 /* ============================================================
    THEME ENGINE
 ============================================================ */
-// openPicker: true when the user actively picks a theme; false on page load (so the picker
-// doesn't pop up on every refresh — the custom colors are still applied either way).
-function changeTheme(t, openPicker) {
+function changeTheme(t) {
     localStorage.setItem('bb_quizTheme', t);
     if (t === 'custom') {
         root.removeAttribute('data-theme');
+        customBuild.classList.add('active');
         loadCustomTheme();
-        if (openPicker) customBuild.classList.add('active'); else customBuild.classList.remove('active');
     } else {
         root.setAttribute('data-theme', t);
         customBuild.classList.remove('active');
+        // Preserve layout custom-properties (persisted sidebar width + header height)
+        // so applying a built-in theme doesn't wipe the restored sidebar width.
+        const _sw = root.style.getPropertyValue('--sidebar-width');
+        const _hh = root.style.getPropertyValue('--header-height');
         root.removeAttribute('style');
+        if (_sw) root.style.setProperty('--sidebar-width', _sw);
+        if (_hh) root.style.setProperty('--header-height', _hh);
         requestAnimationFrame(syncHeaderHeight);
     }
 }
-themeSelect.addEventListener('change', e => changeTheme(e.target.value, true));
+themeSelect.addEventListener('change', e => changeTheme(e.target.value));
 // If Custom is already the active theme, reopen the color pickers
 // the moment the user interacts with the dropdown again.
 themeSelect.addEventListener('mousedown', () => {
@@ -1998,7 +1968,7 @@ async function checkSiteUpdate() {
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('bb_quizTheme') || 'slate';
     themeSelect.value = savedTheme;
-    changeTheme(savedTheme, false);   // apply saved theme WITHOUT popping the custom picker on load
+    changeTheme(savedTheme);
 
     toggleHeader(localStorage.getItem('bb_headerPinned') !== 'false');
 
