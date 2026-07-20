@@ -644,8 +644,6 @@
         scrollbar-color: var(--border-color) transparent;
     }
     #sidebar.collapsed { width: 0; opacity: 0; overflow: hidden; padding: 0; border-right: none; }
-
-    /* Drag handle to resize the sidebar */
     #sidebar-resizer {
         flex-shrink: 0; width: 7px; margin-left: -7px; z-index: 120;
         position: sticky; top: var(--header-height); align-self: flex-start;
@@ -659,9 +657,7 @@
     }
     #sidebar-resizer:hover::before, body.resizing #sidebar-resizer::before { opacity: 1; background: var(--text-accent); }
     #sidebar-resizer:hover { background: var(--bg-hover); }
-    /* Hide the handle whenever the sidebar is collapsed */
     #sidebar.collapsed ~ #sidebar-resizer { display: none; }
-    /* While dragging, suppress the width transition for 1:1 tracking */
     body.resizing #sidebar { transition: none; }
     body.resizing { cursor: col-resize; user-select: none; -webkit-user-select: none; }
 
@@ -978,8 +974,11 @@
         html { scroll-behavior: auto; }
     }
     </style>
+<style>html.bb-classic #app, html.bb-classic #neural-bg, html.bb-classic #wash { display: none !important; }</style>
 </head>
 <body>
+<script>try{if(localStorage.getItem('bb_layout')==='classic')document.documentElement.classList.add('bb-classic');}catch(e){}</script>
+
 
 <canvas id="neural-bg" aria-hidden="true"></canvas>
 <div id="wash" aria-hidden="true"></div>
@@ -1092,6 +1091,15 @@
                 <span class="toggle-knob"></span>
             </button>
         </div>
+        <div class="settings-row">
+            <div class="settings-text">
+                <div class="settings-title">Classic layout</div>
+                <div class="settings-sub">Switch to the classic design</div>
+            </div>
+            <button id="layout-toggle" class="toggle-switch" role="switch" aria-checked="false" onclick="bbSetLayout('classic')">
+                <span class="toggle-knob"></span>
+            </button>
+        </div>
     </div>
 </header>
 
@@ -1178,11 +1186,10 @@
                                 <li class="topic-item">Spinal Cord: Neuroanatomy, Pathways &amp; Blood Supply</li>
                                 <li class="topic-item">Ventricular System: Neuroanatomy and Function</li>
                                 <li class="topic-item">Central Nervous System Histology</li>
-                                <li class="topic-item">Skull, Cranial Cavity, and Cranial Nerves</li>
                             </ul>
                         </div>
                         <div class="part-actions">
-                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-1/" class="take-btn">Take Quiz →</a>
+                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-1/" class="take-btn">Take quiz →</a>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1199,7 +1206,7 @@
                             </ul>
                         </div>
                         <div class="part-actions">
-                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-2/" class="take-btn">Take Quiz →</a>
+                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-2/" class="take-btn">Take quiz →</a>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1216,7 +1223,7 @@
                             </ul>
                         </div>
                         <div class="part-actions">
-                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-3/" class="take-btn">Take Quiz →</a>
+                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-3/" class="take-btn">Take quiz →</a>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1234,7 +1241,7 @@
                             </ul>
                         </div>
                         <div class="part-actions">
-                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-4/" class="take-btn">Take Quiz →</a>
+                            <a href="https://ibecerramcg.github.io/BnB-Week-51-Quiz-4/" class="take-btn">Take quiz →</a>
                             <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
                                 <span class="complete-check">✓</span><span class="complete-text">Done</span>
                             </button>
@@ -1249,7 +1256,7 @@
     </main>
 </div>
 
-<footer id="site-footer">Created by Ian Becerra &middot; <a href="mailto:ibecerra@augusta.edu">ibecerra@augusta.edu</a> &middot; Medical College of Georgia, Class of 2029 &middot; <a href="https://ibecerramcg.github.io/MCG-Pre-Clerkship-Quiz-Library/" target="_blank" rel="noopener noreferrer">Access Main Quiz Library</a>
+<footer id="site-footer">Created by Ian Becerra &middot; <a href="mailto:ibecerra@augusta.edu">ibecerra@augusta.edu</a> &middot; Medical College of Georgia, Class of 2029</footer>
 
 </div>
 
@@ -1565,24 +1572,6 @@ function toggleSettings() {
    Uses the fixed header height (56px) so it can never collapse
    the header itself or get a stale 0 mid-transition.
 ============================================================ */
-function syncHeaderHeight() {
-    const offset = mainHeader.classList.contains('unpinned') ? '0px' : '56px';
-    root.style.setProperty('--header-height', offset);
-}
-let resizeTimer;
-window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(syncHeaderHeight, 80); });
-
-/* ============================================================
-   SIDEBAR (open by default; remembers last state on desktop)
-============================================================ */
-document.getElementById('sidebar-toggle').addEventListener('click', () => {
-    const collapsed = sidebar.classList.toggle('collapsed');
-    // Only remember the choice on desktop (mobile always starts collapsed)
-    if (window.innerWidth > 820) {
-        localStorage.setItem('bb_sidebarCollapsed', collapsed ? 'true' : 'false');
-    }
-});
-
 /* ============================================================
    RESIZABLE SIDEBAR — drag the handle to set the sidebar width.
    Default is the built-in width (264px); double-click resets it.
@@ -1593,13 +1582,10 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
     const root = document.documentElement;
     const KEY = 'bb_dirSidebarWidth';
     const MIN = 150, MAX = 480, DEFAULT = 264;
-
-    // Restore a saved width on load (desktop only — sidebar is an overlay on mobile).
     const saved = parseInt(localStorage.getItem(KEY), 10);
     if (window.innerWidth > 820 && saved >= MIN && saved <= MAX) {
         root.style.setProperty('--sidebar-width', saved + 'px');
     }
-
     let startX = 0, startW = 0, dragging = false;
     function currentWidth() {
         const v = parseInt(getComputedStyle(root).getPropertyValue('--sidebar-width'), 10);
@@ -1619,8 +1605,9 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
         localStorage.setItem(KEY, currentWidth());
     }
     resizer.addEventListener('pointerdown', (e) => {
-        if (window.innerWidth <= 820) return;               // no resizing on mobile
-        if (sidebar.classList.contains('collapsed')) return;
+        if (window.innerWidth <= 820) return;
+        const sb = document.getElementById('sidebar');
+        if (sb && sb.classList.contains('collapsed')) return;
         e.preventDefault();
         dragging = true;
         startX = e.clientX;
@@ -1629,12 +1616,29 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
         window.addEventListener('pointermove', onMove);
         window.addEventListener('pointerup', onUp);
     });
-    // Double-click restores the default width.
     resizer.addEventListener('dblclick', () => {
         root.style.setProperty('--sidebar-width', DEFAULT + 'px');
         localStorage.setItem(KEY, DEFAULT);
     });
 })();
+
+function syncHeaderHeight() {
+    const offset = mainHeader.classList.contains('unpinned') ? '0px' : '56px';
+    root.style.setProperty('--header-height', offset);
+}
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(syncHeaderHeight, 80); });
+
+/* ============================================================
+   SIDEBAR (open by default; remembers last state on desktop)
+============================================================ */
+document.getElementById('sidebar-toggle').addEventListener('click', () => {
+    const collapsed = sidebar.classList.toggle('collapsed');
+    // Only remember the choice on desktop (mobile always starts collapsed)
+    if (window.innerWidth > 820) {
+        localStorage.setItem('bb_sidebarCollapsed', collapsed ? 'true' : 'false');
+    }
+});
 
 function buildNavigation() {
     document.querySelectorAll('.week-section').forEach(sec => {
@@ -1965,7 +1969,65 @@ async function checkSiteUpdate() {
 /* ============================================================
    INIT
 ============================================================ */
+
+/* ============================================================
+   CLASSIC LAYOUT
+   Swaps the whole page to the classic design, rendered inside an isolated
+   iframe so its global CSS/JS cannot clash with this page. The week list is
+   generated from the cards above, so it always matches this directory. The
+   choice is remembered (bb_layout).
+============================================================ */
+function bbBuildClassicWeeks() {
+    let out = '';
+    document.querySelectorAll('.week-section').forEach(sec => {
+        const chip = sec.querySelector('.week-chip');
+        const name = sec.querySelector('.week-name');
+        const id = sec.id || '';
+        let label = chip ? chip.textContent.trim() : (name ? name.textContent.trim() : id);
+        if (chip && name) label = chip.textContent.trim() + ' — ' + name.textContent.trim();
+        let cards = '';
+        sec.querySelectorAll('.part-card').forEach(card => {
+            const pl = card.querySelector('.part-label');
+            const partLabel = pl ? pl.textContent.trim() : '';
+            let topics = '';
+            card.querySelectorAll('.topic-item').forEach(li => { topics += '<li>' + li.innerHTML + '</li>'; });
+            const a = card.querySelector('.take-btn');
+            let btn = '<a class="btn-link btn-disabled">Coming Soon</a>';
+            if (a && !a.classList.contains('disabled')) {
+                btn = '<a href="' + (a.getAttribute('href') || '#') + '" class="btn-link">Take Quiz</a>';
+            }
+            cards += '<div class="day-card"><div class="day-info"><div class="day-badge">' + partLabel +
+                     '</div><ul class="topic-list">' + topics + '</ul></div>' + btn + '</div>';
+        });
+        out += '<div class="week-section" id="' + id + '"><h2 class="week-title" onclick="toggleWeek(\'' + id +
+               '\')">' + label + ' <span class="toggle-icon">▼</span></h2><div class="week-content">' + cards + '</div></div>';
+    });
+    return out;
+}
+function bbGetClassicDoc() {
+    const el = document.getElementById('bb-classic-doc');
+    let doc = el ? el.textContent : '';
+    doc = doc.replace(/<\\\/script>/g, '</' + 'script>');
+    doc = doc.replace('<!--WEEKS-->', bbBuildClassicWeeks());
+    return doc;
+}
+function renderClassicLayout() {
+    const app = document.getElementById('app');
+    if (app) app.style.display = 'none';
+    try { window.bgFx && window.bgFx.stop(); } catch (e) {}
+    const f = document.createElement('iframe');
+    f.id = 'bb-classic-frame';
+    f.title = 'Classic layout';
+    f.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;border:0;z-index:99999;';
+    f.addEventListener('load', () => { try { f.contentWindow.focus(); } catch (e) {} });
+    f.srcdoc = bbGetClassicDoc();
+    document.body.appendChild(f);
+    document.body.style.overflow = 'hidden';
+}
+function bbSetLayout(v) { try { localStorage.setItem('bb_layout', v); } catch (e) {} location.reload(); }
+
 document.addEventListener('DOMContentLoaded', () => {
+    if (localStorage.getItem('bb_layout') === 'classic') { renderClassicLayout(); return; }
     const savedTheme = localStorage.getItem('bb_quizTheme') || 'slate';
     themeSelect.value = savedTheme;
     changeTheme(savedTheme);
@@ -2005,6 +2067,512 @@ document.addEventListener('DOMContentLoaded', () => {
     checkSiteUpdate();
     setInterval(() => { fetchDailyVisitors(); checkSiteUpdate(); }, 60000);
 });
+</script>
+
+<script type="text/html" id="bb-classic-doc">
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brain &amp; Behavior Practice Quiz Directory</title>
+    
+
+    <style>
+        /* --- CSS Variables & Themes --- */
+        :root {
+            --transition-speed: 0.3s;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }[data-theme="dark"] {
+            --bg-body: #1e293b; --bg-card: #334155; --bg-header: #0f172a;
+            --text-main: #f1f5f9; --text-muted: #94a3b8; --text-accent: #38bdf8;
+            --border-color: #475569; --highlight-bg: #475569;
+            --button-bg: #38bdf8; --button-text: #0f172a; --button-hover: #0ea5e9;
+        }[data-theme="light"] {
+            --bg-body: #f3f4f6; --bg-card: #ffffff; --bg-header: #ffffff;
+            --text-main: #1f2937; --text-muted: #6b7280; --text-accent: #2563eb;
+            --border-color: #e5e7eb; --highlight-bg: #e5e7eb;
+            --button-bg: #2563eb; --button-text: #ffffff; --button-hover: #1d4ed8;
+        }[data-theme="midnight"] {
+            --bg-body: #000000; --bg-card: #000000; --bg-header: #000000;
+            --text-main: #e0e0e0; --text-muted: #888888; --text-accent: #90caf9;
+            --border-color: #333333; --highlight-bg: #1a1a1a;
+            --button-bg: #90caf9; --button-text: #000000; --button-hover: #42a5f5;
+        }
+
+        [data-theme="legacy-dark"] {
+            --bg-body: #2d343e; --bg-card: #3c424f; --bg-header: #3c424f;
+            --text-main: #e8e6e3; --text-muted: #b0c4de; --text-accent: #8ab4f8;
+            --border-color: #555; --highlight-bg: #454c5a;
+            --button-bg: #8ab4f8; --button-text: #202124; --button-hover: #a3c5f9;
+        }
+
+        [data-theme="sepia"] {
+            --bg-body: #f4ecd8; --bg-card: #fdf6e3; --bg-header: #e4d5b7;
+            --text-main: #433422; --text-muted: #7c6f5a; --text-accent: #a05a2c;
+            --border-color: #d3c4a5; --highlight-bg: #ebe1c9;
+            --button-bg: #a05a2c; --button-text: #fdf6e3; --button-hover: #864822;
+        }[data-theme="contrast"] {
+            --bg-body: #000000; --bg-card: #000000; --bg-header: #000000;
+            --text-main: #ffffff; --text-muted: #dddddd; --text-accent: #ffff00;
+            --border-color: #ffffff; --highlight-bg: #333333;
+            --button-bg: #ffff00; --button-text: #000000; --button-hover: #e6e600;
+        }
+
+        /* --- Global Reset & Layout --- */
+        * { box-sizing: border-box; }
+        
+        html { background-color: var(--bg-body, #1e293b); transition: background-color var(--transition-speed); }
+        body {
+            font-family: var(--font-main);
+            margin: 0;
+            background-color: var(--bg-body, #1e293b);
+            color: var(--text-main);
+            transition: background-color var(--transition-speed), color var(--transition-speed);
+            line-height: 1.6;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--bg-header);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        header.unpinned { position: relative; box-shadow: none; }
+
+        .header-top {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; flex-wrap: wrap; gap: 15px;
+        }
+
+        header h1 { font-size: 1.5rem; margin: 0; color: var(--text-accent); font-weight: 700; }
+
+        .controls-wrapper { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+        /* --- Search Bar --- */
+        .search-box {
+            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);
+            background-color: var(--bg-card); color: var(--text-main); font-size: 0.9rem;
+            height: 34px; width: 200px; outline: none; transition: border-color 0.2s;
+        }
+        .search-box:focus { border-color: var(--text-accent); }
+
+        /* --- Custom Theme Builder --- */
+        .custom-builder {
+            display: none; flex-wrap: wrap; gap: 15px;
+            background-color: var(--bg-card); padding: 10px 15px;
+            border-radius: 8px; border: 1px solid var(--border-color);
+            margin-top: 5px; font-size: 0.85rem; animation: fadeIn 0.3s;
+        }
+        .custom-builder.active { display: flex; }
+        .color-picker-group { display: flex; align-items: center; gap: 8px; }
+        .color-picker-group input[type="color"] {
+            border: none; width: 25px; height: 25px; border-radius: 4px;
+            cursor: pointer; padding: 0; background: none;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Live Viewer Tracker & Update Widgets --- */
+        .live-tracker {
+            display: flex; align-items: center; gap: 8px;
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            padding: 0 12px; border-radius: 6px; font-size: 0.9rem;
+            color: var(--text-main); height: 34px; font-family: monospace;
+            font-weight: bold; cursor: default; white-space: nowrap;
+        }
+        .live-dot {
+            width: 8px; height: 8px; background-color: #22c55e;
+            border-radius: 50%; animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        
+        .update-pulse-btn {
+            background-color: #22c55e; color: #ffffff; border: none;
+            padding: 0 15px; border-radius: 6px; font-size: 0.9rem; font-weight: bold;
+            cursor: pointer; height: 34px; display: flex; align-items: center;
+            animation: pulse-green 2s infinite; white-space: nowrap;
+            transition: opacity 0.2s;
+        }
+        .update-pulse-btn:hover { opacity: 0.9; }
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* --- Controls --- */
+        .pin-btn {
+            background: none; border: 1px solid var(--border-color); color: var(--text-main);
+            cursor: pointer; padding: 0 10px; border-radius: 6px; font-size: 1rem;
+            transition: background-color 0.2s; height: 34px; display: flex;
+            align-items: center; justify-content: center;
+        }
+        .pin-btn:hover { background-color: var(--highlight-bg); }
+        .pin-btn.pin-active { background-color: rgba(0, 0, 0, 0.1); }
+
+        select#theme-select {
+            padding: 0 12px; border-radius: 6px; border: 1px solid var(--border-color);
+            background-color: var(--bg-card); color: var(--text-main);
+            cursor: pointer; font-family: inherit; height: 34px;
+        }
+
+        /* --- Section Navigation --- */
+        .section-nav { display: flex; gap: 10px; flex-wrap: wrap; }
+        .section-nav button {
+            background-color: var(--highlight-bg); color: var(--text-main);
+            border: 1px solid var(--border-color); padding: 6px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+            font-weight: 500; transition: all 0.2s;
+        }
+        .section-nav button:hover { border-color: var(--text-accent); color: var(--text-accent); }
+
+        /* --- Main Content & Collapsible Logic --- */
+        .container { max-width: 950px; margin: 2rem auto; padding: 0 1rem 4rem 1rem; }
+        .week-section { margin-bottom: 3rem; scroll-margin-top: 150px; }
+        
+        .week-title {
+            color: var(--text-accent); border-bottom: 2px solid var(--text-accent);
+            padding-bottom: 0.5rem; margin-bottom: 1.5rem; font-size: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; user-select: none; transition: opacity 0.2s;
+        }
+        .week-title:hover { opacity: 0.8; }
+        .toggle-icon { font-size: 1rem; transition: transform 0.3s; }
+        .collapsed .toggle-icon { transform: rotate(-90deg); }
+        .week-content { transition: max-height 0.3s ease-out; overflow: hidden; }
+        .collapsed .week-content { display: none; }
+
+        /* --- Directory Cards --- */
+        .day-card {
+            background-color: var(--bg-card); border: 1px solid var(--border-color);
+            border-left: 4px solid var(--text-accent); border-radius: 10px;
+            padding: 1.5rem; margin-bottom: 1rem; display: flex;
+            justify-content: space-between; align-items: center; gap: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s ease;
+        }
+        .day-card:hover { transform: translateY(-2px); }
+
+        .day-info { display: flex; align-items: flex-start; gap: 1.5rem; flex: 1; }
+        .day-badge {
+            background-color: var(--highlight-bg); color: var(--text-main);
+            padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold;
+            min-width: 130px; text-align: center; border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+        .topic-list { margin: 0; padding-left: 1.2rem; color: var(--text-main); font-weight: 500; }
+        .topic-list li { margin-bottom: 0.4rem; }
+
+        /* Sub-notes for things like "Not included" */
+        .sub-note {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            list-style: none;
+            margin-left: -1.2rem;
+            margin-top: 0.2rem;
+            margin-bottom: 0.5rem;
+            font-style: italic;
+        }
+
+        .btn-link {
+            background-color: var(--button-bg); color: var(--button-text);
+            text-decoration: none; padding: 0.75rem 1.5rem; border-radius: 6px;
+            font-weight: 600; white-space: nowrap; transition: opacity 0.2s; text-align: center;
+        }
+        .btn-link:hover { opacity: 0.9; }
+        .btn-disabled {
+            background-color: var(--highlight-bg); color: var(--text-muted);
+            cursor: not-allowed; pointer-events: none; border: 1px dashed var(--border-color);
+        }
+
+        /* --- Mobile Tweaks --- */
+        @media (max-width: 768px) {
+            .header-top { flex-direction: column; align-items: flex-start; }
+            .controls-wrapper { width: 100%; justify-content: flex-start; }
+            .section-nav { justify-content: flex-start; }
+            .search-box { width: 100%; }
+            .day-card { flex-direction: column; align-items: stretch; }
+            .day-info { flex-direction: column; gap: 1rem; }
+            .day-badge { width: auto; display: inline-block; }
+            .btn-link { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="header-top">
+            <h1>Brain &amp; Behavior Practice Quiz Directory</h1>
+            
+            <!-- Restored Controls Wrapper (Exactly as it was visually) -->
+            <div class="controls-wrapper">
+                <input type="text" id="topic-search" class="search-box" placeholder="Search topics..." onkeyup="filterCards()">
+                
+                <div class="live-tracker" title="Visitors Today (Eastern Time)">
+                    <span class="live-dot"></span>
+                    <span id="visitor-count-display">Visitors Today: ...</span>
+                </div>
+                
+                <button class="pin-btn pin-active" id="pin-btn" onclick="toggleHeader()" title="Pin/Unpin Header">📌</button>
+                
+                <div class="theme-control">
+                    <select id="theme-select" onchange="changeTheme(this.value)">
+                        <option value="__newdesign">✦ Enable new design</option>
+                        <option value="dark">Modern Dark</option>
+                        <option value="midnight">Midnight</option>
+                        <option value="light">Modern Light</option>
+                        <option value="legacy-dark">Legacy Dark</option>
+                        <option value="sepia">Sepia</option>
+                        <option value="contrast">High Contrast</option>
+                        <option value="custom">⚙️ Custom...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="custom-builder" id="custom-builder">
+                <div class="color-picker-group">
+                    <label>Background:</label>
+                    <input type="color" id="color-bg" value="#1a1a2e" oninput="updateCustomTheme()">
+                </div>
+                <div class="color-picker-group">
+                    <label>Cards:</label>
+                    <input type="color" id="color-card" value="#16213e" oninput="updateCustomTheme()">
+                </div>
+                <div class="color-picker-group">
+                    <label>Text:</label>
+                    <input type="color" id="color-text" value="#e94560" oninput="updateCustomTheme()">
+                </div>
+                <div class="color-picker-group">
+                    <label>Accent:</label>
+                    <input type="color" id="color-accent" value="#0f3460" oninput="updateCustomTheme()">
+                </div>
+            </div>
+        </div>
+        
+        <!-- NEW layout: Navigation and Last Updated on the same row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 10px;">
+            <div class="section-nav" id="section-nav"></div>
+            
+            <div id="last-updated-container" style="font-family: monospace; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center;">
+                <span id="last-updated-display">Last Updated: Checking...</span>
+                <button id="update-refresh-btn" class="update-pulse-btn" onclick="window.parent.location.reload(true)" style="display: none; height: 28px; font-size: 0.85rem; padding: 0 10px; line-height: 1;" title="A new quiz was posted! Click to refresh the page.">
+                    ✨ New Update! (Refresh)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container" id="directory-root">
+        <!--WEEKS-->
+    </div>
+
+    <script>
+        const mainHeader = document.getElementById('main-header');
+        const themeSelect = document.getElementById('theme-select');
+        const pinBtn = document.getElementById('pin-btn');
+        const sectionNav = document.getElementById('section-nav');
+        const customBuilder = document.getElementById('custom-builder');
+        const rootElements = document.documentElement;
+
+        // --- Live Tracker via Cloudflare Worker ---
+        async function fetchDailyVisitors() { 
+            const proxyUrl = 'https://bnb-practice-quizzes.ianbecerra4.workers.dev/'; 
+            const displayEl = document.getElementById('visitor-count-display');
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Proxy Error');
+                const data = await response.json();
+                displayEl.textContent = `Visitors Today: ${data.visitors}`;
+            } catch (err) {
+                console.warn("View counter failed:", err);
+                displayEl.textContent = `Visitors: -`;
+            }
+        }
+
+        // --- NEW: Active Polling for Site Updates ---
+        let initialLastModified = null;
+
+        async function checkSiteUpdate() {
+            try {
+                // We add a random timestamp parameter to the URL to completely bypass the browser cache and force it to check GitHub servers
+                const cacheBusterUrl = window.parent.location.href.split('?')[0] + '?cb=' + new Date().getTime();
+                
+                // Fetching via 'HEAD' only grabs the hidden data (headers), saving data usage!
+                const response = await fetch(cacheBusterUrl, { method: 'HEAD', cache: 'no-store' });
+                const lastModifiedHeader = response.headers.get('Last-Modified');
+                
+                if (lastModifiedHeader) {
+                    const lastModifiedDate = new Date(lastModifiedHeader);
+                    
+                    // Format date to look like "May 5, 4:30 PM"
+                    const formattedDate = lastModifiedDate.toLocaleString([], {
+                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+                    
+                    document.getElementById('last-updated-display').textContent = `Last Updated: ${formattedDate}`;
+
+                    // Compare current version to version grabbed on page load
+                    if (!initialLastModified) {
+                        initialLastModified = lastModifiedDate.getTime();
+                    } else if (lastModifiedDate.getTime() > initialLastModified) {
+                        // GitHub has pushed a new version! Show the refresh button
+                        document.getElementById('update-refresh-btn').style.display = 'inline-flex';
+                        document.getElementById('last-updated-display').style.display = 'none'; // Hide the text to make room for button
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not check for site updates:", err);
+            }
+        }
+
+        // --- Core Init Logic ---
+        function initDirectory() {
+            // Build Quick Navigation
+            const weekTitles = document.querySelectorAll('.week-title');
+            weekTitles.forEach(title => {
+                const sectionId = title.parentElement.id;
+                const navBtn = document.createElement('button');
+                // Remove the ▼ arrow from the quick nav button text
+                navBtn.textContent = title.textContent.replace('▼', '').trim();
+                navBtn.onclick = () => document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+                sectionNav.appendChild(navBtn);
+            });
+
+            // Initialize Theme
+            const savedTheme = localStorage.getItem('quizTheme') || 'dark';
+            themeSelect.value = savedTheme;
+            changeTheme(savedTheme);
+
+            // Initialize Header Pin State
+            const savedPinState = localStorage.getItem('headerPinned');
+            toggleHeader(savedPinState !== 'false');
+
+            // Initialize Collapsed Weeks
+            const collapsedWeeks = JSON.parse(localStorage.getItem('collapsedWeeks') || '{}');
+            document.querySelectorAll('.week-section').forEach(section => {
+                if (collapsedWeeks[section.id]) {
+                    section.classList.add('collapsed');
+                }
+            });
+
+            // Execute immediately with NO delay
+            fetchDailyVisitors(); 
+            checkSiteUpdate();
+            
+            // Continue polling every 60 seconds
+            setInterval(() => {
+                fetchDailyVisitors();
+                checkSiteUpdate();
+            }, 60000);
+        }
+
+        // --- Collapsible Week Logic ---
+        function toggleWeek(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('collapsed');
+            
+            // Save state to localStorage
+            const states = JSON.parse(localStorage.getItem('collapsedWeeks') || '{}');
+            states[sectionId] = section.classList.contains('collapsed');
+            localStorage.setItem('collapsedWeeks', JSON.stringify(states));
+        }
+
+        // --- Search / Filter Logic ---
+        function filterCards() {
+            const query = document.getElementById('topic-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.day-card');
+            cards.forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(query) ? "flex" : "none";
+            });
+        }
+
+        // --- Theme Engine Logic ---
+        function changeTheme(themeName) {
+            if (themeName === '__newdesign') { switchToModern(); return; }
+            localStorage.setItem('quizTheme', themeName);
+            
+            if (themeName === 'custom') {
+                rootElements.removeAttribute('data-theme'); // Clear default variables
+                customBuilder.classList.add('active');
+                loadCustomTheme();
+            } else {
+                rootElements.setAttribute('data-theme', themeName);
+                customBuilder.classList.remove('active');
+                // Remove inline custom styles so default variables work properly
+                rootElements.style = '';
+            }
+        }
+
+        // --- Custom Theme Builder Logic ---
+        function updateCustomTheme() {
+            const bg = document.getElementById('color-bg').value;
+            const card = document.getElementById('color-card').value;
+            const text = document.getElementById('color-text').value;
+            const accent = document.getElementById('color-accent').value;
+
+            // Apply directly to root CSS variables
+            rootElements.style.setProperty('--bg-body', bg);
+            rootElements.style.setProperty('--bg-header', bg);
+            rootElements.style.setProperty('--bg-card', card);
+            rootElements.style.setProperty('--highlight-bg', card);
+            rootElements.style.setProperty('--text-main', text);
+            rootElements.style.setProperty('--text-accent', accent);
+            rootElements.style.setProperty('--button-bg', accent);
+            rootElements.style.setProperty('--button-text', bg);
+            rootElements.style.setProperty('--border-color', accent + '40'); // slightly transparent accent
+
+            // Save to local storage
+            const customColors = { bg, card, text, accent };
+            localStorage.setItem('customThemeColors', JSON.stringify(customColors));
+        }
+
+        function loadCustomTheme() {
+            const savedColors = JSON.parse(localStorage.getItem('customThemeColors'));
+            if (savedColors) {
+                document.getElementById('color-bg').value = savedColors.bg;
+                document.getElementById('color-card').value = savedColors.card;
+                document.getElementById('color-text').value = savedColors.text;
+                document.getElementById('color-accent').value = savedColors.accent;
+                updateCustomTheme();
+            } else {
+                updateCustomTheme(); // Set to the default input values
+            }
+        }
+
+        // --- Sticky Header Pin Logic ---
+        function toggleHeader(forceState) {
+            const isCurrentlyPinned = !mainHeader.classList.contains('unpinned');
+            const newState = (typeof forceState === 'boolean') ? forceState : !isCurrentlyPinned;
+
+            if (newState) {
+                mainHeader.classList.remove('unpinned');
+                pinBtn.classList.add('pin-active');
+                localStorage.setItem('headerPinned', 'true');
+            } else {
+                mainHeader.classList.add('unpinned');
+                pinBtn.classList.remove('pin-active');
+                localStorage.setItem('headerPinned', 'false');
+            }
+        }
+
+        function switchToModern(){ try{ localStorage.setItem('bb_layout','modern'); }catch(e){} try{ window.parent.location.reload(); }catch(e){ location.reload(); } }
+        document.addEventListener('DOMContentLoaded', initDirectory);
+    <\/script>
+</body>
+</html>
 </script>
 </body>
 </html>
