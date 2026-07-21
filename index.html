@@ -1186,7 +1186,7 @@
                                 <li class="topic-item">Spinal Cord: Neuroanatomy, Pathways &amp; Blood Supply</li>
                                 <li class="topic-item">Ventricular System: Neuroanatomy and Function</li>
                                 <li class="topic-item">Central Nervous System Histology</li>
-                                <li class="topic-item">Skull &amp; Cranial Nerves</li>
+                                <li class="topic-item">Skull, Cranial Cavity, and Cranial Nerves</li>
                             </ul>
                         </div>
                         <div class="part-actions">
@@ -1323,7 +1323,7 @@
     </main>
 </div>
 
-<footer id="site-footer">Created by Ian Becerra &middot; <a href="mailto:ibecerra@augusta.edu">ibecerra@augusta.edu</a> &middot; Medical College of Georgia, Class of 2029</footer>
+<footer id="site-footer">Created by Ian Becerra &middot; <a href="mailto:ibecerra@augusta.edu">ibecerra@augusta.edu</a> &middot; Medical College of Georgia, Class of 2029 &middot; <a href="https://ibecerramcg.github.io/MCG-Pre-Clerkship-Quiz-Library/" target="_blank" rel="noopener noreferrer">Access Main Quiz Library</a></footer>
 
 </div>
 
@@ -1728,15 +1728,49 @@ function buildNavigation() {
 /* ============================================================
    SCROLL EFFECTS
 ============================================================ */
+let navLock = false;   // set right after a sidebar click; released on the next manual scroll
+function setActiveWeek(id) {
+    document.querySelectorAll('.sidebar-week-btn').forEach(b =>
+        b.classList.toggle('active', b.dataset.target === id));
+}
+function updateActiveWeek() {
+    if (navLock) return;   // a sidebar click owns the highlight until the user scrolls
+    const sections = [...document.querySelectorAll('.week-section')];
+    if (!sections.length) return;
+    let active = sections[0].id;
+    // Normal case: the active week is the last one whose top has scrolled above the reference line.
+    for (const sec of sections) {
+        if (sec.getBoundingClientRect().top <= 130) active = sec.id;
+    }
+    // Bottom-of-page case: a short final week can never be scrolled above the line, so once the
+    // page can't scroll any further, the last week is the one being viewed — force it active.
+    if (Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 1) {
+        active = sections[sections.length - 1].id;
+    }
+    setActiveWeek(active);
+}
 window.addEventListener('scroll', () => {
     mainHeader.classList.toggle('scrolled', window.scrollY > 8);
     backToTop.classList.toggle('visible', window.scrollY > 380);
-    let active = null;
-    document.querySelectorAll('.week-section').forEach(sec => {
-        if (sec.getBoundingClientRect().top <= 130) active = sec.id;
-    });
-    document.querySelectorAll('.sidebar-week-btn').forEach(b =>
-        b.classList.toggle('active', b.dataset.target === active));
+    updateActiveWeek();
+});
+// Recompute on resize/zoom (viewport height changes which week can reach the line) and on load.
+window.addEventListener('resize', updateActiveWeek);
+window.addEventListener('load', updateActiveWeek);
+// Clicking a week in the sidebar highlights it and keeps it highlighted even when the page
+// can't scroll it all the way to the top (e.g. the last weeks on a tall/zoomed-out screen).
+document.addEventListener('click', e => {
+    const btn = e.target.closest ? e.target.closest('.sidebar-week-btn') : null;
+    if (btn) { navLock = true; setActiveWeek(btn.dataset.target); }
+});
+// A manual scroll hands control back to position-based highlighting.
+['wheel', 'touchmove'].forEach(ev => window.addEventListener(ev, () => {
+    if (navLock) { navLock = false; updateActiveWeek(); }
+}, { passive: true }));
+window.addEventListener('keydown', e => {
+    if (navLock && ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' ','Spacebar'].includes(e.key)) {
+        navLock = false; updateActiveWeek();
+    }
 });
 
 /* ============================================================
@@ -2125,7 +2159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.bgFx && window.bgFx.setStyle(savedStyle);
 
     // Restore display preferences (defaults: background ON, accents ON, completion ON)
-    applyBackground(localStorage.getItem('bb_bgEnabled') !== 'false');
+    applyBackground(localStorage.getItem('bb_bgEnabled') === 'true');
     applyAccents(localStorage.getItem('bb_accentsEnabled') !== 'false');
     applyCompletionTracker(localStorage.getItem('bb_completeEnabled') !== 'false');
     syncCollapseAllBtn();
@@ -2368,7 +2402,8 @@ document.addEventListener('DOMContentLoaded', () => {
         @media (max-width: 768px) {
             .header-top { flex-direction: column; align-items: flex-start; }
             .controls-wrapper { width: 100%; justify-content: flex-start; }
-            .section-nav { justify-content: flex-start; }
+            .section-nav { justify-content: flex-start; flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: thin; }
+            .section-nav button { flex-shrink: 0; white-space: nowrap; }
             .search-box { width: 100%; }
             .day-card { flex-direction: column; align-items: stretch; }
             .day-info { flex-direction: column; gap: 1rem; }
