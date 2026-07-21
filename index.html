@@ -1888,12 +1888,20 @@ searchInput.addEventListener('input', function () {
 /* ============================================================
    THEME ENGINE
 ============================================================ */
-function changeTheme(t) {
+// Show the color pickers and close the settings panel so they're never hidden behind it.
+function openCustomPicker() {
+    customBuild.classList.add('active');
+    settingsPanel.classList.remove('open');
+    settingsBtn.classList.remove('open');
+}
+// openPicker: true when the user actively picks a theme; false on page load (so the picker
+// doesn't pop up on every refresh - the custom colors are still applied either way).
+function changeTheme(t, openPicker) {
     localStorage.setItem('bb_quizTheme', t);
     if (t === 'custom') {
         root.removeAttribute('data-theme');
-        customBuild.classList.add('active');
         loadCustomTheme();
+        if (openPicker) openCustomPicker(); else customBuild.classList.remove('active');
     } else {
         root.setAttribute('data-theme', t);
         customBuild.classList.remove('active');
@@ -1907,16 +1915,10 @@ function changeTheme(t) {
         requestAnimationFrame(syncHeaderHeight);
     }
 }
-themeSelect.addEventListener('change', e => changeTheme(e.target.value));
+themeSelect.addEventListener('change', e => changeTheme(e.target.value, true));
 // If Custom is already the active theme, reopen the color pickers
 // the moment the user interacts with the dropdown again.
-themeSelect.addEventListener('mousedown', () => {
-    if (themeSelect.value === 'custom') {
-        customBuild.classList.add('active');
-        settingsPanel.classList.remove('open');
-        settingsBtn.classList.remove('open');
-    }
-});
+themeSelect.addEventListener('mousedown', () => { if (themeSelect.value === 'custom') openCustomPicker(); });
 
 function updateCustomTheme() {
     const bg = document.getElementById('color-bg').value;
@@ -2131,7 +2133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (localStorage.getItem('bb_layout') === 'classic') { renderClassicLayout(); return; }
     const savedTheme = localStorage.getItem('bb_quizTheme') || 'slate';
     themeSelect.value = savedTheme;
-    changeTheme(savedTheme);
+    changeTheme(savedTheme, false);   // apply the saved theme WITHOUT popping the custom picker on load
 
     toggleHeader(localStorage.getItem('bb_headerPinned') !== 'false');
 
