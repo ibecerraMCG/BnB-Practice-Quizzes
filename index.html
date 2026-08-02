@@ -1159,7 +1159,7 @@
                 <option value="neural">Neural network</option>
                 <option value="starfield">Starfield</option>
                 <option value="bubbles">Floating orbs</option>
-                <option value="grid">Pulsing grid</option>
+                <option value="aurora">Aurora</option>
                 <option value="waves">Waves</option>
             </select>
         </div>
@@ -1495,7 +1495,7 @@
     const canvas = document.getElementById('neural-bg');
     const ctx = canvas.getContext('2d');
     let W, H, rafId = null, running = false, style = 'neural';
-    let nodes = [], orbs = [], stars = [], shooting = null, t = 0;
+    let nodes = [], orbs = [], stars = [], t = 0;
     const getRGB = () => getComputedStyle(document.documentElement).getPropertyValue('--neural-rgb').trim() || '110,168,254';
 
     function resize() {
@@ -1526,7 +1526,6 @@
             ts: 0.5 + Math.random() * 1.5,           // twinkle speed
             drift: 0.04 + Math.random() * 0.12       // downward drift
         }));
-        shooting = null;
     }
 
     function drawNeural() {
@@ -1568,23 +1567,6 @@
             ctx.fillStyle = `rgba(${rgb},${a.toFixed(3)})`;
             ctx.fill();
         });
-        // occasional shooting star
-        if (!shooting && Math.random() < 0.004) {
-            shooting = {
-                x: Math.random() * W * 0.6, y: Math.random() * H * 0.4,
-                vx: 6 + Math.random() * 4, vy: 3 + Math.random() * 2, life: 1
-            };
-        }
-        if (shooting) {
-            shooting.x += shooting.vx; shooting.y += shooting.vy; shooting.life -= 0.012;
-            const tailX = shooting.x - shooting.vx * 6, tailY = shooting.y - shooting.vy * 6;
-            const grad = ctx.createLinearGradient(shooting.x, shooting.y, tailX, tailY);
-            grad.addColorStop(0, `rgba(${rgb},${Math.max(0, shooting.life * 0.9).toFixed(3)})`);
-            grad.addColorStop(1, `rgba(${rgb},0)`);
-            ctx.strokeStyle = grad; ctx.lineWidth = 1.6;
-            ctx.beginPath(); ctx.moveTo(shooting.x, shooting.y); ctx.lineTo(tailX, tailY); ctx.stroke();
-            if (shooting.life <= 0 || shooting.x > W + 40 || shooting.y > H + 40) shooting = null;
-        }
     }
 
     function drawBubbles() {
@@ -1601,15 +1583,35 @@
         });
     }
 
-    function drawGrid() {
-        const rgb = getRGB(), gap = 46;
-        ctx.lineWidth = 1;
-        for (let x = 0; x <= W; x += gap) {
-            for (let y = 0; y <= H; y += gap) {
-                const a = 0.05 + 0.05 * Math.sin(t * 0.6 + (x + y) * 0.01);
-                ctx.fillStyle = `rgba(${rgb},${Math.max(0, a).toFixed(3)})`;
-                ctx.beginPath(); ctx.arc(x, y, 1.4, 0, Math.PI * 2); ctx.fill();
+    /* Aurora - slow luminous curtains. No particles and no hard edges, so
+       there is nothing for the eye to lock onto or track; it reads as depth
+       rather than motion. Replaces the old pulsing dot grid, whose synchronised
+       blink was the most attention-grabbing of the set. */
+    function drawAurora() {
+        const rgb = getRGB();
+        for (let k = 0; k < 3; k++) {
+            const yBase = H * (0.20 + k * 0.26);
+            const amp   = 34 + k * 15;
+            const speed = t * (0.13 + k * 0.04);
+            const thick = 120 + k * 45;
+            const pts = [];
+            for (let x = 0; x <= W + 20; x += 20) {
+                pts.push([x, yBase
+                    + Math.sin(x * 0.0040 + speed) * amp
+                    + Math.sin(x * 0.0102 + speed * 1.3) * amp * 0.36]);
             }
+            ctx.beginPath();
+            for (let i = 0; i < pts.length; i++) {
+                i ? ctx.lineTo(pts[i][0], pts[i][1]) : ctx.moveTo(pts[i][0], pts[i][1]);
+            }
+            for (let i = pts.length - 1; i >= 0; i--) ctx.lineTo(pts[i][0], pts[i][1] + thick);
+            ctx.closePath();
+            const g = ctx.createLinearGradient(0, yBase - amp, 0, yBase + thick + amp);
+            g.addColorStop(0,   `rgba(${rgb},0)`);
+            g.addColorStop(0.5, `rgba(${rgb},${(0.075 - k * 0.017).toFixed(4)})`);
+            g.addColorStop(1,   `rgba(${rgb},0)`);
+            ctx.fillStyle = g;
+            ctx.fill();
         }
     }
 
@@ -1644,7 +1646,7 @@
         if (style === 'neural') drawNeural();
         else if (style === 'starfield') drawStarfield();
         else if (style === 'bubbles') drawBubbles();
-        else if (style === 'grid') drawGrid();
+        else if (style === 'aurora') drawAurora();
         else if (style === 'waves') drawWaves();
     }
     function start() {
@@ -1662,7 +1664,7 @@
         canvas.style.display = 'none';
     }
     function setStyle(name) {
-        style = name;
+        style = (name === 'grid') ? 'aurora' : name;   // renamed style
         seed();
     }
     window.addEventListener('resize', () => { if (running) resize(); });
@@ -2311,7 +2313,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Restore the chosen background style BEFORE starting the engine
-    const savedStyle = localStorage.getItem('bb_bgStyle') || 'neural';
+    let savedStyle = localStorage.getItem('bb_bgStyle') || 'neural';
+    if (savedStyle === 'grid') savedStyle = 'aurora';   // renamed style
     const styleSelect = document.getElementById('bg-style-select');
     if (styleSelect) styleSelect.value = savedStyle;
     window.bgFx && window.bgFx.setStyle(savedStyle);
