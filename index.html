@@ -845,6 +845,7 @@
     .part-card[data-part="4"] { border-left-color: var(--part-4); }
     .part-card[data-part="tbl"] { border-left-color: var(--text-accent-2); }
     .part-card[data-part="anki"] { border-left-color: #f59e0b; }
+    .part-card[data-part="exam"] { border-left-color: var(--text-accent-2); }
 
     .part-body { flex: 1; min-width: 0; }
 
@@ -859,6 +860,7 @@
     .part-card[data-part="4"] .part-label { color: var(--part-4); }
     .part-card[data-part="tbl"] .part-label { color: var(--text-accent-2); }
     .part-card[data-part="anki"] .part-label { color: #f59e0b; }
+    .part-card[data-part="exam"] .part-label { color: var(--text-accent-2); }
     .part-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 
     .topic-list { list-style: none; display: flex; flex-direction: column; gap: 7px; margin-top: 0.55rem; }
@@ -1791,6 +1793,36 @@
             </div>
         </section>
 
+        <!-- ============ WEEK 60 ============ -->
+        <section class="week-section" id="week-exam" data-nav-num="60" data-pin="bottom">
+            <div class="week-head" onclick="toggleWeek('week-exam')">
+                <span class="week-chip">Week 60</span>
+                <span class="week-name">Exam Week</span>
+                <span class="week-rule"></span>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div class="week-content">
+                <div class="parts-grid">
+
+                    <article class="part-card" data-part="exam" data-quiz="wexamp1">
+                        <div class="part-body">
+                            <div class="part-label"><span class="part-dot"></span>Module Exam Prep</div>
+                            <ul class="topic-list">
+                                <li class="topic-item">Practice Exam - randomly built from questions across every week</li>
+                            </ul>
+                        </div>
+                        <div class="part-actions">
+                            <a href="https://ibecerramcg.github.io/BnB-Practice-Module-Exam/" class="take-btn">Take Exam →</a>
+                            <button class="complete-btn" title="Mark complete" aria-label="Mark complete" aria-pressed="false">
+                                <span class="complete-check">✓</span><span class="complete-text">Done</span>
+                            </button>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
     </main>
 </div>
 
@@ -2180,16 +2212,34 @@ document.getElementById('sidebar-toggle').addEventListener('click', () => {
     }
 });
 
-function buildNavigation() {
+function buildNavigation() {   /* bb-nav-v5 */
+    const main = document.getElementById('main-content');
+    if (main) {
+        // Sections marked data-pin="bottom" always sit last — on the page and in the sidebar —
+        // no matter where they appear in the file.
+        main.querySelectorAll('.week-section[data-pin="bottom"]').forEach(sec => main.appendChild(sec));
+    }
     document.querySelectorAll('.week-section').forEach(sec => {
         const chip = sec.querySelector('.week-chip');
         const name = sec.querySelector('.week-name');
-        const label = chip ? chip.textContent.trim() : sec.id;
-        const num = sec.id.replace(/[^0-9]/g, '');
+        const fallback = chip ? chip.textContent.trim() : sec.id;
+        // data-nav-num / data-nav-label override the defaults (the digits in the id, and the
+        // week name), so a section like "Exam Week" can be titled freely in the sidebar.
+        const hasNum = sec.hasAttribute('data-nav-num');
+        const num = hasNum ? sec.getAttribute('data-nav-num').trim() : sec.id.replace(/[^0-9]/g, '');
+        const text = sec.hasAttribute('data-nav-label')
+            ? sec.getAttribute('data-nav-label')
+            : (name ? name.textContent.trim() : fallback);
         const btn = document.createElement('button');
         btn.className = 'sidebar-week-btn';
         btn.dataset.target = sec.id;
-        btn.innerHTML = `<span class="sbw-num">${num || '—'}</span>${name ? name.textContent.trim() : label}`;
+        if (!hasNum || num) {
+            const pill = document.createElement('span');
+            pill.className = 'sbw-num';
+            pill.textContent = num || '\u2014';
+            btn.appendChild(pill);
+        }
+        btn.appendChild(document.createTextNode(text));
         btn.onclick = () => {
             document.getElementById(sec.id).scrollIntoView({ behavior: 'smooth' });
             if (window.innerWidth <= 820) sidebar.classList.add('collapsed');
